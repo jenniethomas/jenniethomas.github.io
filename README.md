@@ -11,12 +11,12 @@ deploys automatically via GitHub Pages.
 ## Structure
 
 ```
-index.html           Home — hero, bio, research interests, featured pubs, short CV
+index.html           Home — hero, bio, research interests, short CV
 publications.html    Publications by year + preprints section (generated — see below)
 models.html          WRF-Chem-Polar, microplastics-enabled GEOS-Chem, tools, past developments
-projects.html        CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects
+projects.html        CERTAINTY (logo), CRiceS (logo), Bubbleplast, ATMO-PLASTIC, past projects
 assets/css/          Stylesheet (no dependencies)
-assets/img/          Banner photo, favicon
+assets/img/          Banner photo, favicon, project logos
 tools/build_pubs.py  Publication list generator
 UPDATING.md          Step-by-step guide for future updates — start here
 HISTORY.md           Build log, content sources, decisions, TODOs
@@ -29,8 +29,8 @@ still to do. **`UPDATING.md` is the step-by-step guide for future changes.**
 ## Editing
 
 Plain HTML — open any page in a text editor. Shared layout (header nav, footer)
-is duplicated across pages, so edit consistently. Google Scholar, ORCID and
-project links live in the footer of every page.
+is duplicated across pages, so edit consistently. Google Scholar, IGE and
+OPERA group links live in the footer of every page.
 
 ## Updating the publication list
 
@@ -56,3 +56,6 @@ are fast), and rewrites `publications.html`.
 
 - Banner photo: [Pink floyd88 a](https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG),
   [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), via Wikimedia Commons.
+- Project logos: [CERTAINTY](https://certainty-aci.eu) and
+  [CRiceS](https://www.crices-h2020.eu), from their project websites, used to
+  identify the projects.

@@ -95,6 +95,40 @@ Applied Jennie's feedback series:
 - **ORCID and X/Twitter links removed** site-wide (footers, publications
   lede, CV section). Footer links are now Google Scholar, IGE, OPERA group.
 
+### 2026-10-28 — content trimming, project logos, publications cleanup
+
+Second review round (commits `cb9dd92`, `c3b09bd`, `a15cc0d`); `UPDATING.md`
+was written between the rounds as the step-by-step guide for future updates:
+
+- **Home**: "Featured publications" section removed; CERTAINTY in the About
+  text now links to [certainty-aci.eu](https://certainty-aci.eu); the CV
+  section is titled "Short Curriculum Vitae" with no sub-title.
+- **Publications page**: the intro paragraph under the heading was removed,
+  then a one-line "complete record on Google Scholar" link restored under
+  the heading at Jennie's request (the old paragraph had carried the page's
+  only Google Scholar link). The browse-by-year tab strip and per-year
+  publication counts are gone: year headings are bare ("2026", "2025", …)
+  and the preprints section says just "Preprints & under review". The search
+  filter box stays.
+- **Models / Projects pages**: intro paragraphs under the page headings
+  removed (headings stand alone, as on Publications).
+- **Project logos**: the CERTAINTY and CRiceS cards on `projects.html` show
+  their project logos (floated top-right, stacked above the text on narrow
+  screens), resampled to 800px wide from the originals. Sources:
+  CERTAINTY from the site's declared logo on
+  [certainty-aci.eu](https://certainty-aci.eu); CRiceS from the project's
+  [Zenodo community](https://zenodo.org/communities/crices-h2020) logo
+  (identical to the project site's banner image). Credited in the footer
+  "Credits" column — which, like all footer changes, meant editing the four
+  pages plus the `PAGE_TEMPLATE` and regenerating `publications.html`.
+  **Bubbleplast and ATMO-PLASTIC have no logos**: the ANR projects have no
+  websites and the ANR pages carry only ANR branding.
+- **Dead CSS removed** after auditing every class in `style.css` against all
+  pages and the build script: featured-pubs and news-list styles, the hero
+  stats block, `.page-lede`, `.year-jump`, `.badge`/`.badge-preprint`,
+  `.people-note` (old group page), `.hero-photo` and `.more-link`. The audit
+  now comes back clean.
+
 ## Publication list: scope decisions
 
 - 88 curated entries: peer-reviewed articles, book chapters (*Sea Ice*,
@@ -115,7 +149,11 @@ Applied Jennie's feedback series:
 
 ## Known TODOs (need Jennie's input)
 
-- [ ] **Profile photo** — none on the site since the review round; add a favourite to the home page hero when available (restore `.hero-photo` styles from git history if wanted).
+- [ ] **Profile photo** — none on the site since the review round; add a favourite to the home page hero when available (the `.hero-photo` rules were removed in the 2026-10-28 dead-CSS pass; restore them from git history if wanted).
+- [ ] **Past-project links going stale** — on `projects.html`: the iCUPE link
+      returns 404, netcare-project.ca is a parked domain for sale, and
+      access-eu.org now serves unrelated spam content. Consider updating or
+      removing those three links. (PARCS and CATCH sites are still alive.)
 - [ ] **ORCID** — the record (0000-0003-2243-8137) contains an erroneous entry ("Cada-3 System Review", 2026) worth removing.
 - [ ] **Spot-check DOIs** — Crossref metadata is usually right but can carry
       typos (e.g. "BjØrn" for "Bjørn" in one Journal of Climate entry).
@@ -127,6 +165,8 @@ Applied Jennie's feedback series:
 | --- | --- | --- |
 | `arctic-hero.jpg` | [Arctic Ice 2.JPG](https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG) by Pink floyd88 a, via Wikimedia Commons | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) — credited in site footer |
 | `favicon.svg` | Created for this site | — |
+| `logo-certainty.png` | CERTAINTY project logo, via [certainty-aci.eu](https://certainty-aci.eu) | Project branding; used to identify the project; credited in site footer |
+| `logo-crices.png` | CRiceS project logo, via the [CRiceS Zenodo community](https://zenodo.org/communities/crices-h2020) | Project branding; used to identify the project; credited in site footer |
 
 ## Deployment
 

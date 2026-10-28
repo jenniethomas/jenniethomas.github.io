@@ -7,8 +7,8 @@ content sources and past decisions, see `HISTORY.md`.
 
 ## How the site works
 
-- Four hand-written pages: `index.html` (home), `publications.html`,
-  `models.html`, `projects.html`.
+- Four pages: `index.html` (home), `publications.html`, `models.html`,
+  `projects.html`.
 - Plain HTML plus one stylesheet (`assets/css/style.css`). No framework, no
   build step.
 - **`publications.html` is generated** by `tools/build_pubs.py`. Never edit it
@@ -84,7 +84,7 @@ cached in `tools/crossref_cache.json`; stale cache entries are harmless.
 | Task | Place |
 | --- | --- |
 | Home bio, research interests, CV timeline | `index.html` |
-| Projects (CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects) | `projects.html` |
+| Projects (CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects; CERTAINTY and CRiceS have logos) | `projects.html` |
 | Models (WRF-Chem-Polar, microplastics GEOS-Chem, tools, past developments) | `models.html` |
 | Page titles / meta descriptions | `<head>` of each page (title separator is `\|`) |
 | Colours, spacing, typography | `assets/css/style.css` |
@@ -95,7 +95,8 @@ The same header and footer markup is repeated in `index.html`,
 `models.html`, `projects.html` and the `PAGE_TEMPLATE` inside
 `tools/build_pubs.py`. Edit **all four** consistently, then re-run the script
 to regenerate `publications.html`. Current footer links: Google Scholar, IGE,
-OPERA group.
+OPERA group. The "Credits" column carries the banner photo and project-logo
+attributions.
 
 ## Add or change an image
 
@@ -103,7 +104,9 @@ OPERA group.
    e.g. `assets/img/arctic-hero.jpg`.
 2. **Check the licence.** Only publish images you have the right to use.
 3. Credit licensed images in the footer "Credits" column. The banner photo
-   shows the format: source, author, licence, link.
+   shows the format: source, author, licence, link. The project logos are
+   a second example: source website plus a note that they identify the
+   projects.
 
 ## Writing style
 
