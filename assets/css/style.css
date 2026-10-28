@@ -136,15 +136,15 @@ h1, h2, h3, h4 {
 }
 
 .hero a {
-  color: #bfe2f5;
+  color: var(--gold);
   text-decoration: underline;
-  text-decoration-color: rgba(191, 226, 245, 0.45);
+  text-decoration-color: rgba(217, 164, 65, 0.55);
   text-underline-offset: 3px;
 }
 
 .hero a:hover {
-  color: #fff;
-  text-decoration-color: #fff;
+  color: #f0be62;
+  text-decoration-color: #f0be62;
 }
 
 .hero-role { margin: 0 0 16px; color: #cfe3ef; font-size: 1.05rem; }
