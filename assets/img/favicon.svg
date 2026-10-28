@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0c2d4d"/>
+  <text x="32" y="40" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-weight="700" fill="#eaf4fb" text-anchor="middle">JT</text>
+  <path d="M10 48 Q21 53 32 48 T54 48" stroke="#1583b0" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+</svg>

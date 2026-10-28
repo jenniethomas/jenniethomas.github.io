@@ -1,0 +1,539 @@
+#!/usr/bin/env python3
+"""
+Build publications.html for jenniethomas.github.io.
+
+The curated list of publications lives in PUBS below. For each entry the
+script queries the Crossref API to fetch the DOI, full author list, journal,
+volume and pages, then renders publications.html.
+
+Usage:
+    python3 tools/build_pubs.py
+
+To add a new publication: append a tuple to PUBS and re-run the script.
+Crossref responses are cached in tools/crossref_cache.json so re-runs are fast.
+Entries that do not match anything on Crossref fall back to the curated
+venue/author strings.
+
+NOTE: name your own name bolding is automatic - any author with family name
+"Thomas" and a given name starting with "J" (or no given name) is bolded.
+"""
+
+import html
+import json
+import os
+import random
+import re
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+OUT = os.path.join(ROOT, "publications.html")
+CACHE = os.path.join(HERE, "crossref_cache.json")
+CONTACT = "https://github.com/jenniethomas/jenniethomas.github.io"
+
+# (year, title, fallback venue, fallback authors, flag)
+# flag: "preprint" marks preprint / under-review items.
+PUBS = [
+    (2026, "Marine secondary aerosols are required for modeling clouds in the Arctic", "Geophysical Research Letters 53, e2026GL121724", "R Lapere, A Haddon, R Price, L Marelle, AH Monahan, N Steiner, JC Raut, ...", ""),
+    (2026, "Understanding the Spread in Climate Feedbacks and Polar Amplification Using Coordinated Multimodel Experiments and CMIP6", "Journal of Climate 39, 4049-4070", "O Linke, J Lenhardt, MT Lund, J Merikanto, T Naakka, K Nordling, ...", ""),
+    (2026, "Isolating the influence of aerosols on Arctic cloud radiative effects during a polluted warm air mass intrusion", "EGUsphere (preprint)", "R Price, L Marelle, L Bastien, R Lapere, H Angot, B Heutte, J Schmale, ...", "preprint"),
+    (2026, "The biogenic sulfur cycle in the coupled ocean–sea ice–atmosphere system", "Elementa: Science of the Anthropocene 14(1)", "S Ishino, M Willis, H Angot, T Bartels-Rausch, O Crabeck, B Delille, ...", ""),
+    (2026, "Polar primary aerosols across the ocean-sea ice-snow-atmosphere interface: From sources to impacts", "Elementa: Science of the Anthropocene 14(1), 00065", "JM Creamean, LA Miller, M van Pinxteren, O Crabeck, NS Steiner, ...", ""),
+    (2026, "Aerosol‐cloud interactions: Overcoming a barrier to projecting near‐term climate evolution and risk", "AGU Advances 7(1), e2025AV001872", "U Im, BH Samset, A Nenes, JL Thomas, H Kokkola, O Dubovik, V Amiridis, ...", ""),
+    (2026, "Using the power law size distribution to extrapolate and compare microplastic number and mass concentrations in environmental media", "Preprint — under review at Microplastics and Nanoplastics", "T Segur, I Hough, N Dobiasova, D Voisin, C Richon, H Angot, JL Thomas, ...", "preprint"),
+    (2025, "Sea ice, aerosols and clouds", "Chapter in: Sea Ice — Its Physics, Chemistry, Biology, Geology and Societal Importance (Wiley)", "JC Raut, JL Thomas, L Marelle, R Lapere", ""),
+    (2025, "Polar winter climate change: strong local effects from sea ice loss, widespread consequences from warming seas", "Atmospheric Chemistry and Physics 25, 8127-8145", "T Naakka, D Köhler, K Nordling, P Räisänen, MT Lund, R Makkonen, ...", ""),
+    (2025, "How to trace the origins of short-lived atmospheric species: an Arctic example", "Atmospheric Chemistry and Physics 25, 5331-5354", "A Da Silva, L Marelle, JC Raut, Y Gramlich, K Siegel, SL Haslett, C Mohr, ...", ""),
+    (2025, "Aerosol background concentrations influence aerosol‐cloud interactions as much as the choice of aerosol‐cloud parameterization", "Geophysical Research Letters 52, e2024GL111780", "L Marelle, G Myhre, JL Thomas, JC Raut", ""),
+    (2025, "Solar radiation estimation in West Africa: impact of dust conditions during the 2021 dry season", "Atmospheric Chemistry and Physics 25, 997-1021", "L Clauzel, S Anquetin, C Lavaysse, G Bergametti, C Bouet, G Siour, ...", ""),
+    (2025, "Ten crucial unknowns in atmospheric chemistry in the cold", "Faraday Discussions 258, 10-22", "T Bartels-Rausch, J Creamean, JL Thomas, M Willis, P Zieger", ""),
+    (2025, "The interplay between snow and polluted air masses in cold urban environments", "Faraday Discussions 258, 502-520", "J Kuhn, J Stutz, T Bartels-Rausch, JL Thomas, M Cesler-Maloney, ...", ""),
+    (2024, "An Arctic Marine Source of Fluorescent Primary Biological Aerosol Particles During the Transition from Summer to Autumn at the North Pole", "Tellus B: Chemical and Physical Meteorology 76, 47-70", "J Kojoj, GP Freitas, M Muilwijk, MA Granskog, T Naakka, AML Ekman, ...", ""),
+    (2024, "Modeling the contribution of leads to sea spray aerosol in the high Arctic", "Atmospheric Chemistry and Physics 24, 12107-12132", "R Lapere, L Marelle, P Rampal, L Brodeau, C Melsheimer, G Spreen, ...", ""),
+    (2024, "Polar aerosol atmospheric rivers: Detection, characteristics, and potential applications", "Journal of Geophysical Research: Atmospheres 129, e2023JD039606", "R Lapere, JL Thomas, V Favier, H Angot, J Asplund, AML Ekman, ...", ""),
+    (2024, "Shallow boundary layer heights controlled by the surface-based temperature inversion strength are responsible for trapping home heating emissions near the ground level in Fairbanks, Alaska", "EGUsphere (preprint)", "M Cesler-Maloney, W Simpson, J Kuhn, J Stutz, J Thomas, T Roberts, ...", "preprint"),
+    (2023, "Polar oceans and sea ice in a changing climate", "Elementa: Science of the Anthropocene 11, 00056", "MD Willis, D Lannuzel, B Else, H Angot, K Campbell, O Crabeck, B Delille, ...", ""),
+    (2023, "Modelling the coupled mercury-halogen-ozone cycle in the central Arctic during spring", "Elementa: Science of the Anthropocene 11, 00129", "S Ahmed, JL Thomas, H Angot, A Dommergue, SD Archer, L Bariteau, ...", ""),
+    (2023, "Untangling the influence of Antarctic and Southern Ocean life on clouds", "Elementa: Science of the Anthropocene 11, 00130", "MD Mallet, RS Humphries, SL Fiddes, SP Alexander, K Altieri, H Angot, ...", ""),
+    (2023, "The representation of sea salt aerosols and their role in polar climate within CMIP6", "Journal of Geophysical Research: Atmospheres 128, e2022JD038235", "R Lapere, JL Thomas, L Marelle, AML Ekman, MM Frey, MT Lund, ...", ""),
+    (2022, "A mass budget and box model of global plastics cycling, degradation and dispersal in the land-ocean-atmosphere system", "Microplastics and Nanoplastics 2, 28", "JE Sonke, AM Koenig, N Yakovenko, O Hagelskjær, H Margenat, ...", ""),
+    (2022, "Mercury isotope evidence for Arctic summertime re-emission of mercury from the cryosphere", "Nature Communications 13, 4956", "BF Araujo, S Osterwalder, N Szponar, D Lee, MV Petrova, JB Pernov, ...", ""),
+    (2022, "Modeling an extreme dust deposition event to the French alpine seasonal snowpack in April 2018: Meteorological context and predictions of dust deposition", "Journal of Geophysical Research: Atmospheres 127, e2021JD035745", "F Baladima, JL Thomas, D Voisin, M Dumont, C Junquas, R Kumar, ...", ""),
+    (2022, "Comparison of model and ground observations finds snowpack and blowing snow both contribute to Arctic tropospheric reactive bromine", "Atmospheric Chemistry and Physics 22", "WF Swanson, CD Holmes, WR Simpson, K Confer, L Marelle, JL Thomas, ...", ""),
+    (2022, "The role of snow in controlling halogen chemistry and boundary layer oxidation during Arctic spring: A 1D modelling case study", "Journal of Geophysical Research: Atmospheres 127, e2021JD036140", "S Ahmed, JL Thomas, K Tuite, J Stutz, F Flocke, JJ Orlando, ...", ""),
+    (2021, "Evidence of free tropospheric and long-range transport of microplastic at Pic du Midi Observatory", "Nature Communications 12, 7242", "S Allen, D Allen, F Baladima, VR Phoenix, JL Thomas, G Le Roux, ...", ""),
+    (2021, "Fate of Springtime Atmospheric Reactive Mercury: Concentrations and Deposition at Zeppelin, Svalbard", "ACS Earth and Space Chemistry 5, 3234-3246", "S Osterwalder, SM Dunham-Cheatham, B Ferreira Araujo, O Magand, ...", ""),
+    (2021, "Implementation and impacts of surface and blowing snow sources of Arctic bromine activation within WRF-Chem 4.1.1", "Journal of Advances in Modeling Earth Systems 13, e2020MS002391", "L Marelle, JL Thomas, S Ahmed, K Tuite, J Stutz, A Dommergue, ...", ""),
+    (2021, "Quantifying nitrous acid formation mechanisms using measured vertical profiles during the CalNex 2010 campaign and 1D column modeling", "Journal of Geophysical Research: Atmospheres 126, e2021JD034689", "K Tuite, JL Thomas, PR Veres, JM Roberts, PS Stevens, SM Griffith, ...", ""),
+    (2020, "Integrative and comprehensive Understanding on Polar Environments (iCUPE): The concept and initial results", "Atmospheric Chemistry and Physics 20", "T Petäjä, EM Duplissy, K Tabakova, J Schmale, B Altstädter, G Ancellet, ...", ""),
+    (2019, "Overview paper: New insights into aerosol and climate in the Arctic", "Atmospheric Chemistry and Physics 19, 2527-2560", "JPD Abbatt, WR Leaitch, AA Aliabadi, AK Bertram, JP Blanchet, ...", ""),
+    (2019, "Ice nucleating particles in the marine boundary layer in the Canadian Arctic during summer 2014", "Atmospheric Chemistry and Physics 19, 1027-1039", "VE Irish, SJ Hanna, MD Willis, S China, JL Thomas, JJB Wentzell, ...", ""),
+    (2019, "Influence of vertical mixing and nighttime transport on surface ozone variability in the morning in Paris and the surrounding region", "Atmospheric Environment 197, 92-102", "A Klein, F Ravetta, JL Thomas, G Ancellet, P Augustin, R Wilson, ...", ""),
+    (2019, "Fostering multidisciplinary research on interactions between chemistry, biology, and physics within the coupled cryosphere-atmosphere system", "Elementa: Science of the Anthropocene 7, 58", "JL Thomas, J Stutz, MM Frey, T Bartels-Rausch, K Altieri, F Baladima, ...", ""),
+    (2018, "Polar nighttime chemistry produces intense reactive bromine events", "Geophysical Research Letters 45, 9987-9994", "WR Simpson, U Frieß, JL Thomas, J Lampel, U Platt", ""),
+    (2018, "Modeled Response of Greenland Snowmelt to the Presence of Biomass Burning‐Based Absorbing Aerosols in the Atmosphere and Snow", "Journal of Geophysical Research: Atmospheres 123, 6122-6141", "JL Ward, MG Flanner, M Bergin, JE Dibb, CM Polashenski, AJ Soja, ...", ""),
+    (2017, "Local Arctic air pollution: Sources and impacts", "Ambio 46, 453-463", "KS Law, A Roiger, JL Thomas, L Marelle, JC Raut, S Dalsøren, ...", ""),
+    (2017, "Improvements to the WRF-Chem 3.5.1 model for quasi-hemispheric simulations of aerosols and ozone in the Arctic", "Geoscientific Model Development 10, 3661-3677", "L Marelle, JC Raut, KS Law, LK Berg, JD Fast, RC Easter, M Shrivastava, ...", ""),
+    (2017, "Characterizing the seasonal cycle and vertical structure of ozone in Paris, France using four years of ground based LIDAR measurements in the lowermost troposphere", "Atmospheric Environment 167, 603-615", "A Klein, G Ancellet, F Ravetta, JL Thomas, A Pazmino", ""),
+    (2017, "Synchronous volcanic eruptions and abrupt climate change ∼17.7 ka plausibly linked by stratospheric ozone depletion", "Proceedings of the National Academy of Sciences 114, 10035-10040", "JR McConnell, A Burke, NW Dunbar, P Köhler, JL Thomas, MM Arienzo, ...", ""),
+    (2017, "Cross-polar transport and scavenging of Siberian aerosols containing black carbon during the 2012 ACCESS summer campaign", "Atmospheric Chemistry and Physics 17, 10969-10995", "JC Raut, L Marelle, JD Fast, JL Thomas, B Weinzierl, KS Law, LK Berg, ...", ""),
+    (2017, "Quantifying black carbon deposition over the Greenland ice sheet from forest fires in Canada", "Geophysical Research Letters 44, 7965-7974", "JL Thomas, CM Polashenski, AJ Soja, L Marelle, KA Casey, HD Choi, ...", ""),
+    (2017, "Boundary layer and free-tropospheric dimethyl sulfide in the Arctic spring and summer", "Atmospheric Chemistry and Physics 17, 8757-8770", "R Ghahremaninezhad, AL Norman, B Croft, RV Martin, JR Pierce, J Burkart, ...", ""),
+    (2017, "Evidence for marine biogenic influence on summertime Arctic aerosol", "Geophysical Research Letters 44, 6460-6470", "MD Willis, F Köllner, J Burkart, H Bozem, JL Thomas, J Schneider, ...", ""),
+    (2017, "Microlayer source of oxygenated volatile organic compounds in the summertime marine Arctic boundary layer", "Proceedings of the National Academy of Sciences 114, 6203-6208", "EL Mungall, JPD Abbatt, JJB Wentzell, AKY Lee, JL Thomas, M Blais, ...", ""),
+    (2017, "Summertime observations of elevated levels of ultrafine particles in the high Arctic marine boundary layer", "Atmospheric Chemistry and Physics 17, 5515-5535", "J Burkart, MD Willis, H Bozem, JL Thomas, K Law, P Hoor, AA Aliabadi, ...", ""),
+    (2017, "Air pollution impacts due to petroleum extraction in the Norwegian Sea during the ACCESS aircraft campaign", "Elementa: Science of the Anthropocene 5, 25", "P Tuccella, JL Thomas, KS Law, JC Raut, L Marelle, A Roiger, B Weinzierl, ...", ""),
+    (2016, "Analysis of the latitudinal variability of tropospheric ozone in the Arctic using the large number of aircraft and ozonesonde observations in early summer 2008", "Atmospheric Chemistry and Physics 16, 13341-13358", "G Ancellet, N Daskalakis, JC Raut, D Tarasick, J Hair, B Quennehen, ...", ""),
+    (2016, "Multi-model evaluation of short-lived pollutant distributions over east Asia during summer 2008", "Atmospheric Chemistry and Physics 16, 10765-10792", "B Quennehen, JC Raut, KS Law, N Daskalakis, G Ancellet, C Clerbaux, ...", ""),
+    (2016, "Ship emissions measurement in the Arctic by plume intercepts of the Canadian Coast Guard icebreaker Amundsen from the Polar 6 aircraft platform", "Atmospheric Chemistry and Physics 16, 7899-7916", "AA Aliabadi, JL Thomas, AB Herber, RM Staebler, WR Leaitch, H Schulz, ...", ""),
+    (2016, "Growth of nucleation mode particles in the summertime Arctic: a case study", "Atmospheric Chemistry and Physics 16, 7663-7679", "MD Willis, J Burkart, JL Thomas, F Köllner, J Schneider, H Bozem, ...", ""),
+    (2016, "Dimethyl sulfide in the summertime Arctic atmosphere: measurements and source sensitivity simulations", "Atmospheric Chemistry and Physics 16, 6665-6680", "EL Mungall, B Croft, M Lizotte, JL Thomas, JG Murphy, M Levasseur, ...", ""),
+    (2016, "Analysis of nitrate in the snow and atmosphere at Summit, Greenland: Chemistry and transport", "Journal of Geophysical Research: Atmospheres 121, 5010-5030", "DL Fibiger, JE Dibb, D Chen, JL Thomas, JF Burkhart, LG Huey, ...", ""),
+    (2016, "Biogenic, anthropogenic and sea salt sulfate size-segregated aerosols in the Arctic summer", "Atmospheric Chemistry and Physics 16, 5191-5202", "R Ghahremaninezhad, AL Norman, JPD Abbatt, M Levasseur, JL Thomas", ""),
+    (2016, "Air quality and radiative impacts of Arctic shipping emissions in the summertime in northern Norway: from the local to the regional scale", "Atmospheric Chemistry and Physics 16, 2359-2379", "L Marelle, JL Thomas, JC Raut, KS Law, JP Jalkanen, L Johansson, ...", ""),
+    (2016, "Ammonia in the summertime Arctic marine boundary layer: sources, sinks, and implications", "Atmospheric Chemistry and Physics 16, 1937-1953", "GR Wentworth, JG Murphy, B Croft, RV Martin, JR Pierce, JS Côté, ...", ""),
+    (2016, "Arctic offshore hydrocarbons and the European Union: more constraints and less opportunities", "Chapter in: The Changing Arctic and the European Union", "M Łuszczuk, D Justus, J Thomas, C Klok, F Gerber", ""),
+    (2016, "Arctic air pollution: Challenges and opportunities for the next decade", "Elementa: Science of the Anthropocene 4, 000104", "SR Arnold, KS Law, CA Brock, JL Thomas, SM Starkweather, ...", ""),
+    (2016, "Changes in Arctic maritime transport", "Chapter in: The Changing Arctic and the European Union", "G Sander, J Gille, A Stępień, T Koivurova, J Thomas, JC Gascard, ...", ""),
+    (2015, "The POLARCAT Model Intercomparison Project (POLMIP): overview and evaluation with observations", "Atmospheric Chemistry and Physics 15, 6721-6744", "LK Emmons, SR Arnold, SA Monks, V Huijnen, S Tilmes, KS Law, ...", ""),
+    (2015, "Biomass burning influence on high-latitude tropospheric ozone and reactive nitrogen in summer 2008: a multi-model analysis based on POLMIP simulations", "Atmospheric Chemistry and Physics 15, 6047-6068", "SR Arnold, LK Emmons, SA Monks, KS Law, DA Ridley, S Turquety, ...", ""),
+    (2015, "Transport of anthropogenic and biomass burning aerosols from Europe to the Arctic during spring 2008", "Atmospheric Chemistry and Physics 15, 3831-3850", "L Marelle, JC Raut, JL Thomas, KS Law, B Quennehen, G Ancellet, ...", ""),
+    (2015, "Multi-model study of chemical and physical controls on transport of anthropogenic and biomass burning pollution to the Arctic", "Atmospheric Chemistry and Physics 15, 3575-3603", "SA Monks, SR Arnold, LK Emmons, KS Law, S Turquety, BN Duncan, ...", ""),
+    (2015, "Quantifying emerging local anthropogenic emissions in the Arctic region: The ACCESS aircraft campaign experiment", "Bulletin of the American Meteorological Society 96, 441-460", "A Roiger, JL Thomas, H Schlager, KS Law, J Kim, A Schäfler, B Weinzierl, ...", ""),
+    (2014, "Arctic air pollution: New insights from POLARCAT-IPY", "Bulletin of the American Meteorological Society 95, 1873-1895", "KS Law, A Stohl, PK Quinn, CA Brock, JF Burkhart, JD Paris, G Ancellet, ...", ""),
+    (2014, "Summertime tropospheric ozone assessment over the Mediterranean region using the thermal infrared IASI/MetOp sounder and the WRF-Chem model", "Atmospheric Chemistry and Physics 14, 10119-10131", "S Safieddine, A Boynard, PF Coheur, D Hurtmans, G Pfister, ...", ""),
+    (2014, "A review of air–ice chemical and physical interactions (AICI): liquids, quasi-liquids, and solids in snow", "Atmospheric Chemistry and Physics 14, 1587-1633", "T Bartels-Rausch, HW Jacobi, TF Kahan, JL Thomas, ES Thomson, ...", ""),
+    (2014, "Climate change in the Arctic", "Chapter in: Strategic Assessment of Development of the Arctic", "M Strahlendorff, S Duyck, J Gille, A Leonenko, T Koivurova, ...", ""),
+    (2014, "Developing oil and gas resources in Arctic waters", "Chapter in: Strategic Assessment of Development of the Arctic", "M Luszczuk, D Justus, J Thomas, TC Klok, F Gerber", ""),
+    (2013, "Pollution transport from North America to Greenland during summer 2008", "Atmospheric Chemistry and Physics 13, 3825-3848", "JL Thomas, JC Raut, KS Law, L Marelle, G Ancellet, F Ravetta, JD Fast, ...", ""),
+    (2013, "The influence of snow grain size and impurities on the vertical profiles of actinic flux and associated NOx emissions on the Antarctic and Greenland ice sheets", "Atmospheric Chemistry and Physics 13, 3547-3567", "MC Zatko, TC Grenfell, B Alexander, SJ Doherty, JL Thomas, X Yang", ""),
+    (2012, "Overview of the 2007 and 2008 campaigns conducted as part of the Greenland Summit Halogen-HOx Experiment (GSHOX)", "Atmospheric Chemistry and Physics 12, 10833-10839", "JL Thomas, JE Dibb, J Stutz, R Von Glasow, S Brooks, LG Huey, B Lefer", ""),
+    (2012, "Halogen activation via interactions with environmental ice and snow in the polar lower troposphere and other regions", "Atmospheric Chemistry and Physics 12, 6237-6271", "JPD Abbatt, JL Thomas, K Abrahamsson, C Boxe, A Granfors, AE Jones, ...", ""),
+    (2012, "Modeling chemistry in and above snow at Summit, Greenland – Part 2: Impact of snowpack chemistry on the oxidation capacity of the boundary layer", "Atmospheric Chemistry and Physics 12, 6537-6554", "JL Thomas, JE Dibb, LG Huey, J Liao, D Tanner, B Lefer, R von Glasow, ...", ""),
+    (2011, "Longpath DOAS observations of surface BrO at Summit, Greenland", "Atmospheric Chemistry and Physics 11, 9899-9910", "J Stutz, JL Thomas, SC Hurlock, M Schneider, R Von Glasow, M Piot, ...", ""),
+    (2011, "Observations of hydroxyl and peroxy radicals and the impact of BrO at Summit, Greenland in 2007 and 2008", "Atmospheric Chemistry and Physics 11, 8577-8591", "J Liao, LG Huey, DJ Tanner, N Brough, S Brooks, JE Dibb, J Stutz, ...", ""),
+    (2011, "Modeling chemistry in and above snow at Summit, Greenland – Part 1: Model description and results", "Atmospheric Chemistry and Physics 11, 4899-4914", "JL Thomas, J Stutz, B Lefer, LG Huey, K Toyota, JE Dibb, R Von Glasow", ""),
+    (2009, "Structure of large nitrate–water clusters at ambient temperatures: simulations with effective fragment potentials and force fields with implications for atmospheric chemistry", "The Journal of Physical Chemistry A 113, 12805-12814", "Y Miller, JL Thomas, DD Kemp, BJ Finlayson-Pitts, MS Gordon, DJ Tobias, ...", ""),
+    (2008, "Sensitivity and uncertainty analysis of the mechanism of gas-phase chlorine production from NaCl aerosols in the MAGIC model", "Atmospheric Environment 42, 6934-6941", "P Nissenson, JL Thomas, BJ Finlayson-Pitts, D Dabdub", ""),
+    (2008, "Enhanced surface photochemistry in chloride–nitrate ion mixtures", "Physical Chemistry Chemical Physics 10, 5668-5677", "LM Wingen, AC Moskun, SN Johnson, JL Thomas, M Roeselová, ...", ""),
+    (2008, "Nitrate ion photochemistry at interfaces: a new mechanism for oxidation of α-pinene", "Physical Chemistry Chemical Physics 10, 3063-3071", "Y Yu, MJ Ezell, A Zelenyuk, D Imre, L Alexander, J Ortega, JL Thomas, ...", ""),
+    (2007, "Direct comparisons of experimental and calculated neutron structure factors of pure solvents as a method for force field validation", "The Journal of Physical Chemistry B 111, 12941-12944", "JL Thomas, DJ Tobias, AD MacKerell", ""),
+    (2007, "Molecular dynamics simulations of the solution−air interface of aqueous sodium nitrate", "The Journal of Physical Chemistry A 111, 3091-3098", "JL Thomas, M Roeselova, LX Dang, DJ Tobias", ""),
+    (2006, "Gas-phase molecular halogen formation from NaCl and NaBr aerosols: When are interface reactions important?", "The Journal of Physical Chemistry A 110, 1859-1867", "JL Thomas, A Jimenez-Aranda, BJ Finlayson-Pitts, D Dabdub", ""),
+    (2002, "Proton-coupled electron transfer versus hydrogen atom transfer in benzyl/toluene, methoxyl/methanol, and phenoxyl/phenol self-exchange reactions", "Journal of the American Chemical Society 124, 11142-11147", "JM Mayer, DA Hrovat, JL Thomas, WT Borden", ""),
+]
+
+PREPRINT_CONTAINERS = (
+    "egusphere", "essoar", "research square", "authorea",
+    "eartharxiv", "chemrxiv", "bioarchive", "preprints.org", "preprint",
+)
+
+# Copernicus discussion/preprint DOIs look like 10.5194/acp-2016-1023 or
+# 10.5194/egusphere-2024-1271; versions of record look like 10.5194/acp-17-10969-2017.
+PREPRINT_DOI_RE = re.compile(r"^10\.5194/(egusphere|[a-z]+)-\d{4}-\d+")
+# EGU conference abstracts (10.5194/egusphere-egu26-20984) must never be used.
+ABSTRACT_DOI_RE = re.compile(r"^10\.5194/egusphere-egu\d{2}-")
+OLD_DISCUSSION_DOIS = ("/acpd-", "/gmdd-", "/cpd-")
+
+# Manually verified DOIs for publications the Crossref search fails to rank well.
+# Metadata (authors, journal, ...) is fetched by DOI, so only the DOI is needed.
+DOI_OVERRIDES = {
+    "Overview paper: New insights into aerosol and climate in the Arctic":
+        "10.5194/acp-19-2527-2019",
+}
+
+
+PREPRINT_DOI_PREFIXES = (
+    "10.31223/",  # EarthArXiv
+    "10.22541/",  # ESSOAar
+    "10.26434/",  # ChemRxiv
+    "10.1101/",   # bioRxiv / medRxiv
+    "10.21203/",  # Research Square
+    "10.31224/",  # engrXiv / SocArXiv
+)
+
+
+def record_is_preprint(doi, container):
+    """Detect preprint/discussion/abstract records by DOI pattern or journal name."""
+    doi = (doi or "").lower()
+    container = (container or "").lower()
+    if "faraday discussions" in container:
+        return False
+    if PREPRINT_DOI_RE.match(doi):
+        return True
+    if doi.startswith(PREPRINT_DOI_PREFIXES) or any(d in doi for d in OLD_DISCUSSION_DOIS):
+        return True
+    return any(p in container for p in PREPRINT_CONTAINERS)
+
+
+def norm_title(s):
+    """Normalize a title into a set of alphanumeric tokens."""
+    s = s.lower()
+    s = re.sub(r"[\u2010\u2011\u2012\u2013\u2014\u2015\u2212-]+", " ", s)
+    s = re.sub(r"[^a-z0-9]+", " ", s)
+    return set(s.split())
+
+
+def load_cache():
+    if os.path.exists(CACHE):
+        with open(CACHE, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def save_cache(cache):
+    with open(CACHE, "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False, indent=1, sort_keys=True)
+
+
+def crossref_query(title, with_author=True, rows=8, retries=3):
+    params = {
+        "query.bibliographic": title,
+        "rows": rows,
+        "select": "DOI,title,container-title,volume,page,article-number,issued,author",
+        "mailto": CONTACT,
+    }
+    if with_author:
+        params["query.author"] = "Thomas"
+    url = "https://api.crossref.org/works?" + urllib.parse.urlencode(params)
+    for attempt in range(retries):
+        time.sleep(random.uniform(0.2, 0.5))
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": f"jenniethomas-site-builder/1.0 ({CONTACT})"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return json.load(r)["message"]["items"]
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503) and attempt < retries - 1:
+                time.sleep(2 * (attempt + 1))
+                continue
+            return []
+        except Exception:
+            if attempt < retries - 1:
+                time.sleep(1 + attempt)
+                continue
+            return []
+    return []
+
+
+def best_match(items, tokens, year=None):
+    """Return the best matching Crossref item.
+
+    Candidates must overlap >= 70% of the query title tokens and, when a
+    reference year is given, be published within 3 years of it. Final versions
+    are preferred over discussion/preprint versions.
+    """
+    if not items:
+        return None
+    scored = []
+    for it in items:
+        if ABSTRACT_DOI_RE.match(it.get("DOI") or ""):
+            continue  # EGU conference abstract, not a publication
+        titles = it.get("title") or [""]
+        toks = norm_title(titles[0])
+        if not tokens or not toks:
+            continue
+        score = len(tokens & toks) / len(tokens)
+        if score < 0.7:
+            continue
+        container = (it.get("container-title") or [""])[0]
+        is_preprint = record_is_preprint(it.get("DOI"), container)
+        issued = (it.get("issued", {}).get("date-parts") or [[None]])[0]
+        item_year = issued[0] if issued else None
+        if item_year is None:
+            continue
+        item_year = int(item_year)
+        year_penalty = abs(item_year - year) if year is not None else 0
+        if year is not None and year_penalty > 3:
+            continue
+        # Prefer records that carry a journal name (preprints often lack one).
+        unnamed = 0 if container.strip() else 1
+        scored.append((is_preprint, year_penalty, -score, unnamed, it))
+    if not scored:
+        return None
+    scored.sort(key=lambda x: (x[0], x[1], x[2], x[3]))
+    return scored[0][4]
+
+
+def fmt_authors(authors):
+    """Format a Crossref author list, bolding Jennie L. Thomas."""
+    parts = []
+    for a in authors or []:
+        family = a.get("family")
+        given = (a.get("given") or "").strip()
+        if family:
+            name = f"{given} {family}".strip()
+            is_jt = family.lower() == "thomas" and (not given or given.lower().startswith("j"))
+        else:
+            name = (a.get("name") or "").strip()
+            is_jt = False
+        if not name:
+            continue
+        name = html.escape(name)
+        parts.append(f"<strong>{name}</strong>" if is_jt else name)
+    return ", ".join(parts)
+
+
+def fmt_fallback_authors(raw):
+    """Bold Jennie's name inside a curated fallback author string."""
+    esc = html.escape(raw)
+    pattern = r"(J\.?\s?L\.?\s+Thomas|Jennie\s+L\.?\s+Thomas|J\s+Thomas|Jennie\s+Thomas)"
+    return re.sub(pattern, r"<strong>\1</strong>", esc)
+
+
+def record_from_item(item):
+    container = (item.get("container-title") or [""])[0]
+    return {
+        "doi": item.get("DOI"),
+        "container": container,
+        "volume": item.get("volume", ""),
+        "page": item.get("page") or item.get("article-number", ""),
+        "authors": fmt_authors(item.get("author")),
+    }
+
+
+def fetch_by_doi(doi):
+    """Fetch complete metadata for a manually verified DOI."""
+    url = f"https://api.crossref.org/works/{urllib.parse.quote(doi)}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": f"jenniethomas-site-builder/1.0 ({CONTACT})"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return record_from_item(json.load(r)["message"])
+    except Exception:
+        return None
+
+
+def build():
+    doi_overrides = {
+        " ".join(sorted(norm_title(t))): d for t, d in DOI_OVERRIDES.items()
+    }
+    cache = load_cache()
+    # Retry entries that previously found no match or matched the wrong
+    # version (a preprint or conference abstract for a final publication).
+    for pub in PUBS:
+        key = " ".join(sorted(norm_title(pub[1])))
+        cached = cache.get(key)
+        if cached is None:
+            cache.pop(key, None)
+        elif key in doi_overrides:
+            cache.pop(key, None)  # refresh manual overrides
+        elif (pub[4] != "preprint" and (
+            record_is_preprint(cached.get("doi"), cached.get("container"))
+            or not (cached.get("container") or "").strip()
+        )) or ABSTRACT_DOI_RE.match(cached.get("doi") or ""):
+            cache.pop(key, None)
+    results = [None] * len(PUBS)
+    todo = []
+
+    for i, pub in enumerate(PUBS):
+        key = " ".join(sorted(norm_title(pub[1])))
+        if key in cache:
+            results[i] = cache[key]
+        else:
+            todo.append((i, key, pub[1], pub[0]))
+
+    def work(job):
+        i, key, title, year = job
+        manual_doi = doi_overrides.get(key)
+        if manual_doi:
+            return i, key, fetch_by_doi(manual_doi)
+        item = best_match(crossref_query(title), norm_title(title), year)
+        if item is None:
+            # Second attempt: broader result set, no author constraint.
+            item = best_match(crossref_query(title, with_author=False, rows=20),
+                              norm_title(title), year)
+        return i, key, record_from_item(item) if item else None
+
+    if todo:
+        with ThreadPoolExecutor(max_workers=1) as ex:
+            for i, key, rec in ex.map(work, todo):
+                results[i] = rec
+                cache[key] = rec
+        save_cache(cache)
+
+    # Assemble records
+    records = []
+    matched = 0
+    for pub, rec in zip(PUBS, results):
+        year, title, venue, authors, flag = pub
+        usable = False
+        cr_preprint = False
+        if rec and rec["doi"] and not ABSTRACT_DOI_RE.match(rec["doi"]):
+            cr_preprint = record_is_preprint(rec["doi"], rec["container"])
+            # A preprint record is only used when the curated entry is itself a
+            # preprint; final publications need a journal name.
+            has_venue = bool(rec["container"].strip()) or flag == "preprint"
+            usable = has_venue and not (cr_preprint and flag != "preprint")
+        is_preprint = flag == "preprint" or cr_preprint
+        if usable:
+            matched += 1
+            title_html = (
+                f'<a href="https://doi.org/{rec["doi"]}">{html.escape(title)}</a>'
+            )
+            venue_parts = [rec["container"], rec["volume"], rec["page"]]
+            venue_html = ", ".join(html.escape(p) for p in venue_parts if p)
+            if not venue_html:
+                venue_html = html.escape(venue)
+            authors_html = rec["authors"] or fmt_fallback_authors(authors)
+        else:
+            title_html = html.escape(title)
+            venue_html = html.escape(venue)
+            authors_html = fmt_fallback_authors(authors)
+            is_preprint = flag == "preprint"
+        if is_preprint:
+            title_html += ' <span class="badge badge-preprint">Preprint</span>'
+        records.append({
+            "year": year,
+            "title": title_html,
+            "authors": authors_html,
+            "venue": venue_html,
+        })
+
+    # Group by year, newest first
+    years = sorted({r["year"] for r in records}, reverse=True)
+    sections = []
+    for y in years:
+        pubs = [r for r in records if r["year"] == y]
+        items = []
+        for r in pubs:
+            items.append(
+                f'<li class="pub">\n'
+                f'  <div class="pub-title">{r["title"]}</div>\n'
+                f'  <div class="pub-authors">{r["authors"]}</div>\n'
+                f'  <div class="pub-venue"><em>{r["venue"]}</em></div>\n'
+                f"</li>"
+            )
+        sections.append(
+            f'<section class="pub-year" id="y{y}">\n'
+            f'<h2>{y} <span class="pub-count">{len(pubs)} publication{"s" if len(pubs) != 1 else ""}</span></h2>\n'
+            f'<ol class="pub-list">\n' + "\n".join(items) + "\n</ol>\n</section>"
+        )
+
+    body = "\n".join(sections)
+    years_html = ' <span class="dot" aria-hidden="true">&middot;</span> '.join(
+        f'<a href="#y{y}">{y}</a>' for y in years
+    )
+    page = PAGE_TEMPLATE.replace("{{YEARS}}", years_html).replace("{{BODY}}", body)
+    with open(OUT, "w", encoding="utf-8") as f:
+        f.write(page)
+    print(f"Wrote {OUT}")
+    print(f"  {len(records)} publications, {matched} with Crossref DOIs, {len(records) - matched} using curated fallback data.")
+    unmatched = [p[1] for p, r in zip(PUBS, results) if not (r and r["doi"])]
+    if unmatched:
+        print("  No DOI found for:")
+        for t in unmatched:
+            print(f"    - {t}")
+
+
+PAGE_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publications — Jennie L. Thomas</title>
+<meta name="description" content="Publications of Jennie L. Thomas — CNRS Senior Researcher at the Institut des Géosciences de l'Environnement (IGE), Université Grenoble Alpes.">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand" href="index.html">Jennie L. Thomas<span>, PhD</span></a>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a class="active" href="publications.html">Publications</a>
+      <a href="projects.html">Projects</a>
+      <a href="group.html">Group</a>
+      <a href="teaching.html">Teaching</a>
+      <a href="news.html">News</a>
+    </nav>
+  </div>
+</header>
+<main>
+<div class="page-hero">
+  <div class="container">
+    <h1>Publications</h1>
+    <p class="page-lede">Peer-reviewed articles and book chapters, newest first. Full author lists and links point to the version of record via DOI. Citation counts and the complete record are available on <a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a> and <a href="https://orcid.org/0000-0003-2243-8137">ORCID</a>.</p>
+    <div class="pub-filter">
+      <input type="search" id="pub-search" placeholder="Filter by title, author or journal&hellip;" aria-label="Filter publications">
+      <span id="pub-filter-count" class="filter-count"></span>
+    </div>
+    <nav class="year-jump" aria-label="Jump to year">
+      {{YEARS}}
+    </nav>
+  </div>
+</div>
+<div class="container pub-container">
+{{BODY}}
+</div>
+</main>
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <p class="footer-name">Jennie L. Thomas, PhD</p>
+      <p>CNRS Senior Researcher<br>
+      Institut des Géosciences de l'Environnement (IGE)<br>
+      Université Grenoble Alpes<br>
+      CS 40700, 38058 Grenoble Cedex 9, France</p>
+      <p class="email">Jennie.Thomas <span class="email-at">[at]</span> univ-grenoble-alpes.fr</p>
+    </div>
+    <div>
+      <p class="footer-heading">Links</p>
+      <ul class="footer-links">
+        <li><a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a></li>
+        <li><a href="https://orcid.org/0000-0003-2243-8137">ORCID</a></li>
+        <li><a href="https://x.com/JennieLThomas">X / Twitter</a></li>
+        <li><a href="https://www.ige-grenoble.fr/">IGE</a></li>
+        <li><a href="https://ige-opera.github.io/">OPERA group</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-heading">Credits</p>
+      <p>Banner photo: <a href="https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG">Pink floyd88 a</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via Wikimedia Commons.</p>
+      <p>Profile photo: <a href="https://ige-opera.github.io/people/">OPERA research group</a>.</p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p>&copy; 2026 Jennie L. Thomas &middot; <a href="https://github.com/jenniethomas/jenniethomas.github.io">Site source on GitHub</a></p>
+  </div>
+</footer>
+<script>
+(function () {
+  var input = document.getElementById('pub-search');
+  if (!input) return;
+  var pubs = Array.prototype.slice.call(document.querySelectorAll('.pub'));
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.pub-year'));
+  var count = document.getElementById('pub-filter-count');
+  function update() {
+    var q = input.value.trim().toLowerCase();
+    var visible = 0;
+    pubs.forEach(function (p) {
+      var show = !q || p.textContent.toLowerCase().indexOf(q) !== -1;
+      p.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    sections.forEach(function (s) {
+      var any = s.querySelectorAll('.pub:not([style*="none"])').length > 0;
+      s.style.display = any ? '' : 'none';
+    });
+    if (count) count.textContent = q ? visible + ' of ' + pubs.length + ' publications' : '';
+  }
+  input.addEventListener('input', update);
+})();
+</script>
+</body>
+</html>
+"""
+
+
+if __name__ == "__main__":
+    build()
