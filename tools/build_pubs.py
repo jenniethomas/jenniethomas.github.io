@@ -36,8 +36,12 @@ CACHE = os.path.join(HERE, "crossref_cache.json")
 CONTACT = "https://github.com/jenniethomas/jenniethomas.github.io"
 
 # (year, title, fallback venue, fallback authors, flag)
-# flag: "preprint" marks preprint / under-review items.
+# flag: "preprint" marks preprint / under-review items. These are listed in a
+# separate "Preprints" section until Crossref reports an accepted final
+# version, at which point re-running the script moves them into the year
+# sections automatically.
 PUBS = [
+    (2026, "Reduced global atmospheric microplastic emissions from size-harmonized observations", "Research Square preprint (under review at a Nature Portfolio journal)", "I Hough, H Angot, R Price, N Dobiasova, T Segur, ...", "preprint"),
     (2026, "Marine secondary aerosols are required for modeling clouds in the Arctic", "Geophysical Research Letters 53, e2026GL121724", "R Lapere, A Haddon, R Price, L Marelle, AH Monahan, N Steiner, JC Raut, ...", ""),
     (2026, "Understanding the Spread in Climate Feedbacks and Polar Amplification Using Coordinated Multimodel Experiments and CMIP6", "Journal of Climate 39, 4049-4070", "O Linke, J Lenhardt, MT Lund, J Merikanto, T Naakka, K Nordling, ...", ""),
     (2026, "Isolating the influence of aerosols on Arctic cloud radiative effects during a polluted warm air mass intrusion", "EGUsphere (preprint)", "R Price, L Marelle, L Bastien, R Lapere, H Angot, B Heutte, J Schmale, ...", "preprint"),
@@ -144,6 +148,8 @@ OLD_DISCUSSION_DOIS = ("/acpd-", "/gmdd-", "/cpd-")
 DOI_OVERRIDES = {
     "Overview paper: New insights into aerosol and climate in the Arctic":
         "10.5194/acp-19-2527-2019",
+    "Reduced global atmospheric microplastic emissions from size-harmonized observations":
+        "10.21203/rs.3.rs-10231003/v1",
 }
 
 
@@ -317,19 +323,23 @@ def build():
         " ".join(sorted(norm_title(t))): d for t, d in DOI_OVERRIDES.items()
     }
     cache = load_cache()
-    # Retry entries that previously found no match or matched the wrong
-    # version (a preprint or conference abstract for a final publication).
+    # Decide which cached entries need to be looked up again:
+    #  - misses (None) and manual overrides: always
+    #  - conference-abstract matches: always
+    #  - curated publications matched to a preprint or to a record with no
+    #    journal name
+    #  - curated preprints still matched to a preprint: re-check so that the
+    #    final version is picked up automatically once the paper is accepted
     for pub in PUBS:
         key = " ".join(sorted(norm_title(pub[1])))
         cached = cache.get(key)
-        if cached is None:
+        if cached is None or key in doi_overrides:
             cache.pop(key, None)
-        elif key in doi_overrides:
-            cache.pop(key, None)  # refresh manual overrides
-        elif (pub[4] != "preprint" and (
-            record_is_preprint(cached.get("doi"), cached.get("container"))
-            or not (cached.get("container") or "").strip()
-        )) or ABSTRACT_DOI_RE.match(cached.get("doi") or ""):
+            continue
+        cached_doi = cached.get("doi") or ""
+        if (ABSTRACT_DOI_RE.match(cached_doi)
+                or record_is_preprint(cached_doi, cached.get("container"))
+                or not (cached.get("container") or "").strip()):
             cache.pop(key, None)
     results = [None] * len(PUBS)
     todo = []
@@ -339,18 +349,27 @@ def build():
         if key in cache:
             results[i] = cache[key]
         else:
-            todo.append((i, key, pub[1], pub[0]))
+            todo.append((i, key, pub[1], pub[0], pub[4]))
 
     def work(job):
-        i, key, title, year = job
-        manual_doi = doi_overrides.get(key)
-        if manual_doi:
-            return i, key, fetch_by_doi(manual_doi)
+        i, key, title, year, flag = job
+        # Search Crossref for the best record. A published (non-preprint)
+        # record always wins — even for entries curated as preprints, since
+        # the paper may have been accepted since curation.
         item = best_match(crossref_query(title), norm_title(title), year)
         if item is None:
             # Second attempt: broader result set, no author constraint.
             item = best_match(crossref_query(title, with_author=False, rows=20),
                               norm_title(title), year)
+        if item is not None:
+            container = (item.get("container-title") or [""])[0]
+            if not record_is_preprint(item.get("DOI"), container):
+                return i, key, record_from_item(item)
+        # Only a preprint (or nothing) was found: use the manual DOI if one
+        # is recorded, otherwise the preprint match itself.
+        manual_doi = doi_overrides.get(key)
+        if manual_doi:
+            return i, key, fetch_by_doi(manual_doi)
         return i, key, record_from_item(item) if item else None
 
     if todo:
@@ -373,7 +392,6 @@ def build():
             # preprint; final publications need a journal name.
             has_venue = bool(rec["container"].strip()) or flag == "preprint"
             usable = has_venue and not (cr_preprint and flag != "preprint")
-        is_preprint = flag == "preprint" or cr_preprint
         if usable:
             matched += 1
             title_html = (
@@ -388,40 +406,59 @@ def build():
             title_html = html.escape(title)
             venue_html = html.escape(venue)
             authors_html = fmt_fallback_authors(authors)
-            is_preprint = flag == "preprint"
-        if is_preprint:
-            title_html += ' <span class="badge badge-preprint">Preprint</span>'
+        # The preprints section lists only unpublished work: a curated
+        # preprint moves into the year sections once its final version is
+        # found on Crossref.
+        in_preprints = flag == "preprint" and not (usable and not cr_preprint)
+        if in_preprints and str(year) not in venue_html:
+            venue_html = f"{venue_html}, {year}" if venue_html else str(year)
         records.append({
             "year": year,
             "title": title_html,
             "authors": authors_html,
             "venue": venue_html,
+            "preprint": in_preprints,
         })
 
-    # Group by year, newest first
-    years = sorted({r["year"] for r in records}, reverse=True)
+    # Render: preprints section first, then published work grouped by year
+    def render_items(recs):
+        return [
+            f'<li class="pub">\n'
+            f'  <div class="pub-title">{r["title"]}</div>\n'
+            f'  <div class="pub-authors">{r["authors"]}</div>\n'
+            f'  <div class="pub-venue"><em>{r["venue"]}</em></div>\n'
+            f"</li>"
+            for r in recs
+        ]
+
+    preprint_records = sorted(
+        [r for r in records if r["preprint"]], key=lambda r: -r["year"]
+    )
+    main_records = [r for r in records if not r["preprint"]]
+    years = sorted({r["year"] for r in main_records}, reverse=True)
+
     sections = []
+    if preprint_records:
+        n = len(preprint_records)
+        sections.append(
+            '<section class="pub-year" id="preprints">\n'
+            f'<h2>Preprints &amp; under review <span class="pub-count">{n} item{"s" if n != 1 else ""}</span></h2>\n'
+            '<ol class="pub-list">\n' + "\n".join(render_items(preprint_records)) + "\n</ol>\n</section>"
+        )
     for y in years:
-        pubs = [r for r in records if r["year"] == y]
-        items = []
-        for r in pubs:
-            items.append(
-                f'<li class="pub">\n'
-                f'  <div class="pub-title">{r["title"]}</div>\n'
-                f'  <div class="pub-authors">{r["authors"]}</div>\n'
-                f'  <div class="pub-venue"><em>{r["venue"]}</em></div>\n'
-                f"</li>"
-            )
+        pubs = [r for r in main_records if r["year"] == y]
         sections.append(
             f'<section class="pub-year" id="y{y}">\n'
             f'<h2>{y} <span class="pub-count">{len(pubs)} publication{"s" if len(pubs) != 1 else ""}</span></h2>\n'
-            f'<ol class="pub-list">\n' + "\n".join(items) + "\n</ol>\n</section>"
+            f'<ol class="pub-list">\n' + "\n".join(render_items(pubs)) + "\n</ol>\n</section>"
         )
 
     body = "\n".join(sections)
-    years_html = ' <span class="dot" aria-hidden="true">&middot;</span> '.join(
-        f'<a href="#y{y}">{y}</a>' for y in years
-    )
+    jump = []
+    if preprint_records:
+        jump.append('<a href="#preprints">Preprints</a>')
+    jump += [f'<a href="#y{y}">{y}</a>' for y in years]
+    years_html = ' <span class="dot" aria-hidden="true">&middot;</span> '.join(jump)
     page = PAGE_TEMPLATE.replace("{{YEARS}}", years_html).replace("{{BODY}}", body)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write(page)
@@ -462,7 +499,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <div class="page-hero">
   <div class="container">
     <h1>Publications</h1>
-    <p class="page-lede">Peer-reviewed articles and book chapters, newest first. Full author lists and links point to the version of record via DOI. Citation counts and the complete record are available on <a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a> and <a href="https://orcid.org/0000-0003-2243-8137">ORCID</a>.</p>
+    <p class="page-lede">Peer-reviewed articles and book chapters, newest first, with preprints of unpublished work listed separately. Entries link to the version of record (or preprint) via DOI. Citation counts and the complete record are available on <a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a> and <a href="https://orcid.org/0000-0003-2243-8137">ORCID</a>.</p>
     <div class="pub-filter">
       <input type="search" id="pub-search" placeholder="Filter by title, author or journal&hellip;" aria-label="Filter publications">
       <span id="pub-filter-count" class="filter-count"></span>

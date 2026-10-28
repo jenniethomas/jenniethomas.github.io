@@ -12,16 +12,20 @@ deploys automatically via GitHub Pages.
 
 ```
 index.html           Home — hero, bio, research interests, featured pubs, short CV, news
-publications.html    All publications by year (generated — see below)
-projects.html        CERTAINTY, CRiceS, past projects, models & tools
+publications.html    Publications by year + preprints section (generated — see below)
+projects.html        CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects, models
 group.html           OPERA research group, supervision
 teaching.html        Teaching, supervision, outreach & policy
 news.html            News items
 assets/css/          Stylesheet (no dependencies)
 assets/img/          Profile photo, banner photo, favicon
 tools/build_pubs.py  Publication list generator
+HISTORY.md           Build log, content sources, decisions, TODOs
 .nojekyll            Tells GitHub Pages to serve files as-is
 ```
+
+`HISTORY.md` records what was built when, from which sources, and what is
+still to do — read it before making changes.
 
 ## Editing
 
@@ -35,7 +39,9 @@ The publications page is **generated** by `tools/build_pubs.py`:
 
 1. Add a new entry to the `PUBS` list at the top of the script —
    `(year, title, fallback venue, fallback authors, flag)` where `flag` is
-   `""` for a publication and `"preprint"` for preprints.
+   `""` for a publication and `"preprint"` for work not yet accepted.
+   Preprints are shown in a separate section and move into the year sections
+   automatically once Crossref reports the accepted final version.
 2. If Crossref search fails to find a paper, add its DOI to `DOI_OVERRIDES`.
 3. Run:
 
