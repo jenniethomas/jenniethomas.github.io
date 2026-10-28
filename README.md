@@ -18,12 +18,13 @@ projects.html        CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects
 assets/css/          Stylesheet (no dependencies)
 assets/img/          Banner photo, favicon
 tools/build_pubs.py  Publication list generator
+UPDATING.md          Step-by-step guide for future updates — start here
 HISTORY.md           Build log, content sources, decisions, TODOs
 .nojekyll            Tells GitHub Pages to serve files as-is
 ```
 
 `HISTORY.md` records what was built when, from which sources, and what is
-still to do — read it before making changes.
+still to do. **`UPDATING.md` is the step-by-step guide for future changes.**
 
 ## Editing
 

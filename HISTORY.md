@@ -7,6 +7,9 @@ For repo structure and publication-list mechanics, see also `README.md`.
 
 ## Quick reference: where to add things
 
+For step-by-step instructions for every update task, see **`UPDATING.md`**.
+The short version:
+
 | I want to add… | Do this |
 | --- | --- |
 | A new paper or preprint | Add a tuple to `PUBS` in `tools/build_pubs.py` (set flag `"preprint"` for unpublished work), run `python3 tools/build_pubs.py`, commit |
