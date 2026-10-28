@@ -325,6 +325,8 @@ h1, h2, h3, h4 {
    Publications page
    -------------------------------------------------------------------------- */
 
+.pub-scholar { margin: 0; font-size: 0.95rem; color: var(--body); }
+
 .pub-filter { margin: 22px 0 4px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
 .pub-filter input {

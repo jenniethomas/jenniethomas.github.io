@@ -490,6 +490,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <div class="page-hero">
   <div class="container">
     <h1>Publications</h1>
+    <p class="pub-scholar">Citation counts and the complete record are available on <a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a>.</p>
     <div class="pub-filter">
       <input type="search" id="pub-search" placeholder="Filter by title, author or journal&hellip;" aria-label="Filter publications">
       <span id="pub-filter-count" class="filter-count"></span>
