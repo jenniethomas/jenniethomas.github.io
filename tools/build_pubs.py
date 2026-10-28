@@ -453,12 +453,7 @@ def build():
         )
 
     body = "\n".join(sections)
-    jump = []
-    if preprint_records:
-        jump.append('<a href="#preprints">Preprints</a>')
-    jump += [f'<a href="#y{y}">{y}</a>' for y in years]
-    years_html = ' <span class="dot" aria-hidden="true">&middot;</span> '.join(jump)
-    page = PAGE_TEMPLATE.replace("{{YEARS}}", years_html).replace("{{BODY}}", body)
+    page = PAGE_TEMPLATE.replace("{{BODY}}", body)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write(page)
     print(f"Wrote {OUT}")
@@ -496,14 +491,10 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <div class="page-hero">
   <div class="container">
     <h1>Publications</h1>
-    <p class="page-lede">Peer-reviewed articles and book chapters, newest first, with preprints of unpublished work listed separately. Entries link to the version of record (or preprint) via DOI. Citation counts and the complete record are available on <a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a>.</p>
     <div class="pub-filter">
       <input type="search" id="pub-search" placeholder="Filter by title, author or journal&hellip;" aria-label="Filter publications">
       <span id="pub-filter-count" class="filter-count"></span>
     </div>
-    <nav class="year-jump" aria-label="Jump to year">
-      {{YEARS}}
-    </nav>
   </div>
 </div>
 <div class="container pub-container">

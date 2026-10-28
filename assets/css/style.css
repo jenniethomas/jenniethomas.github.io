@@ -151,22 +151,6 @@ h1, h2, h3, h4 {
 
 .hero-blurb { margin: 0 0 26px; max-width: 56ch; color: #e8f1f8; }
 
-.stat-row { display: flex; gap: 28px; flex-wrap: wrap; }
-
-.stat { min-width: 90px; }
-
-.stat-num {
-  display: block;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.02em;
-}
-
-.stat-label { font-size: 0.82rem; color: #9fd0e8; text-transform: uppercase; letter-spacing: 0.08em; }
-
-.stat-source { margin: 14px 0 0; font-size: 0.78rem; color: #8db4ca; }
-
 /* --------------------------------------------------------------------------
    Page hero (inner pages)
    -------------------------------------------------------------------------- */
@@ -178,8 +162,6 @@ h1, h2, h3, h4 {
 }
 
 .page-hero h1 { margin: 0 0 10px; font-size: clamp(1.7rem, 3.5vw, 2.3rem); }
-
-.page-lede { margin: 0; max-width: 72ch; color: var(--body); }
 
 /* --------------------------------------------------------------------------
    Sections & cards
@@ -214,55 +196,6 @@ h1, h2, h3, h4 {
 .card h3 .icon { margin-right: 8px; }
 
 .card p { margin: 0; font-size: 0.95rem; }
-
-/* --------------------------------------------------------------------------
-   Featured publications & news lists
-   -------------------------------------------------------------------------- */
-
-.feature-list { display: grid; gap: 14px; }
-
-.feature-item {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
-  border-radius: 10px;
-  padding: 16px 20px;
-}
-
-.feature-item .pub-title, .feature-item h3 {
-  margin: 0 0 4px;
-  font-size: 1.02rem;
-  color: var(--ink);
-}
-
-.feature-item h3 a { color: var(--navy); font-weight: 650; }
-
-.feature-item .meta { margin: 0; font-size: 0.9rem; color: var(--muted); }
-
-.news-list { display: grid; gap: 12px; }
-
-.news-item {
-  display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 18px;
-}
-
-.news-date {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding-top: 3px;
-}
-
-.news-item p { margin: 0; font-size: 0.97rem; }
-
-.more-link { display: inline-block; margin-top: 18px; font-weight: 600; }
 
 /* --------------------------------------------------------------------------
    Timeline (short CV)
@@ -406,22 +339,6 @@ h1, h2, h3, h4 {
 
 .filter-count { color: var(--muted); font-size: 0.88rem; }
 
-.year-jump { margin-top: 18px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-
-.year-jump a {
-  border: 1.5px solid var(--border);
-  background: #fff;
-  border-radius: 999px;
-  padding: 3px 12px;
-  font-size: 0.85rem;
-  font-weight: 650;
-  color: var(--navy);
-}
-
-.year-jump a:hover { border-color: var(--accent); color: var(--accent-dark); text-decoration: none; }
-
-.year-jump .dot { color: var(--muted); }
-
 .pub-container { padding: 36px 24px 64px; }
 
 .pub-year h2 {
@@ -449,24 +366,6 @@ h1, h2, h3, h4 {
 .pub-authors strong { color: var(--ink); font-weight: 700; }
 
 .pub-venue { margin-top: 2px; font-size: 0.88rem; color: var(--muted); }
-
-.badge {
-  display: inline-block;
-  border-radius: 999px;
-  padding: 1px 10px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  vertical-align: 2px;
-  letter-spacing: 0.04em;
-}
-
-.badge-preprint { background: var(--ice-deep); color: var(--navy); }
-
-/* --------------------------------------------------------------------------
-   Group page
-   -------------------------------------------------------------------------- */
-
-.people-note { display: grid; gap: 12px; }
 
 /* --------------------------------------------------------------------------
    Footer
@@ -516,10 +415,8 @@ h1, h2, h3, h4 {
 
 @media (max-width: 760px) {
   .hero-grid { grid-template-columns: 1fr; gap: 24px; padding-top: 48px; padding-bottom: 48px; }
-  .hero-photo { order: -1; }
   .footer-grid { grid-template-columns: 1fr; gap: 22px; }
   .nav { justify-content: center; }
-  .news-item { grid-template-columns: 1fr; gap: 2px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -527,7 +424,7 @@ h1, h2, h3, h4 {
    -------------------------------------------------------------------------- */
 
 @media print {
-  .site-header, .site-footer, .pub-filter, .year-jump, .more-link { display: none; }
+  .site-header, .site-footer, .pub-filter { display: none; }
   body { color: #000; font-size: 11pt; }
   .pub { break-inside: avoid; }
 }

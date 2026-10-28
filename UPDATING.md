@@ -83,7 +83,7 @@ cached in `tools/crossref_cache.json`; stale cache entries are harmless.
 
 | Task | Place |
 | --- | --- |
-| Home bio, research interests, featured publications, CV timeline | `index.html` |
+| Home bio, research interests, CV timeline | `index.html` |
 | Projects (CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects) | `projects.html` |
 | Models (WRF-Chem-Polar, microplastics GEOS-Chem, tools, past developments) | `models.html` |
 | Page titles / meta descriptions | `<head>` of each page (title separator is `\|`) |
