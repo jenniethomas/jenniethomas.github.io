@@ -59,7 +59,6 @@ PUBS = [
     (2024, "An Arctic Marine Source of Fluorescent Primary Biological Aerosol Particles During the Transition from Summer to Autumn at the North Pole", "Tellus B: Chemical and Physical Meteorology 76, 47-70", "J Kojoj, GP Freitas, M Muilwijk, MA Granskog, T Naakka, AML Ekman, ...", ""),
     (2024, "Modeling the contribution of leads to sea spray aerosol in the high Arctic", "Atmospheric Chemistry and Physics 24, 12107-12132", "R Lapere, L Marelle, P Rampal, L Brodeau, C Melsheimer, G Spreen, ...", ""),
     (2024, "Polar aerosol atmospheric rivers: Detection, characteristics, and potential applications", "Journal of Geophysical Research: Atmospheres 129, e2023JD039606", "R Lapere, JL Thomas, V Favier, H Angot, J Asplund, AML Ekman, ...", ""),
-    (2024, "Shallow boundary layer heights controlled by the surface-based temperature inversion strength are responsible for trapping home heating emissions near the ground level in Fairbanks, Alaska", "EGUsphere (preprint)", "M Cesler-Maloney, W Simpson, J Kuhn, J Stutz, J Thomas, T Roberts, ...", "preprint"),
     (2023, "Polar oceans and sea ice in a changing climate", "Elementa: Science of the Anthropocene 11, 00056", "MD Willis, D Lannuzel, B Else, H Angot, K Campbell, O Crabeck, B Delille, ...", ""),
     (2023, "Modelling the coupled mercury-halogen-ozone cycle in the central Arctic during spring", "Elementa: Science of the Anthropocene 11, 00129", "S Ahmed, JL Thomas, H Angot, A Dommergue, SD Archer, L Bariteau, ...", ""),
     (2023, "Untangling the influence of Antarctic and Southern Ocean life on clouds", "Elementa: Science of the Anthropocene 11, 00130", "MD Mallet, RS Humphries, SL Fiddes, SP Alexander, K Altieri, H Angot, ...", ""),
@@ -476,8 +475,8 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Publications — Jennie L. Thomas</title>
-<meta name="description" content="Publications of Jennie L. Thomas — CNRS Senior Researcher at the Institut des Géosciences de l'Environnement (IGE), Université Grenoble Alpes.">
+<title>Publications | Jennie L. Thomas</title>
+<meta name="description" content="Publications of Jennie L. Thomas, CNRS Senior Researcher at the Institut des Géosciences de l'Environnement (IGE), Université Grenoble Alpes.">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -488,10 +487,8 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     <nav class="site-nav">
       <a href="index.html">Home</a>
       <a class="active" href="publications.html">Publications</a>
+      <a href="models.html">Models</a>
       <a href="projects.html">Projects</a>
-      <a href="group.html">Group</a>
-      <a href="teaching.html">Teaching</a>
-      <a href="news.html">News</a>
     </nav>
   </div>
 </header>
@@ -499,7 +496,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <div class="page-hero">
   <div class="container">
     <h1>Publications</h1>
-    <p class="page-lede">Peer-reviewed articles and book chapters, newest first, with preprints of unpublished work listed separately. Entries link to the version of record (or preprint) via DOI. Citation counts and the complete record are available on <a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a> and <a href="https://orcid.org/0000-0003-2243-8137">ORCID</a>.</p>
+    <p class="page-lede">Peer-reviewed articles and book chapters, newest first, with preprints of unpublished work listed separately. Entries link to the version of record (or preprint) via DOI. Citation counts and the complete record are available on <a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a>.</p>
     <div class="pub-filter">
       <input type="search" id="pub-search" placeholder="Filter by title, author or journal&hellip;" aria-label="Filter publications">
       <span id="pub-filter-count" class="filter-count"></span>
@@ -527,8 +524,6 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
       <p class="footer-heading">Links</p>
       <ul class="footer-links">
         <li><a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a></li>
-        <li><a href="https://orcid.org/0000-0003-2243-8137">ORCID</a></li>
-        <li><a href="https://x.com/JennieLThomas">X / Twitter</a></li>
         <li><a href="https://www.ige-grenoble.fr/">IGE</a></li>
         <li><a href="https://ige-opera.github.io/">OPERA group</a></li>
       </ul>
@@ -536,7 +531,6 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     <div>
       <p class="footer-heading">Credits</p>
       <p>Banner photo: <a href="https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG">Pink floyd88 a</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via Wikimedia Commons.</p>
-      <p>Profile photo: <a href="https://ige-opera.github.io/people/">OPERA research group</a>.</p>
     </div>
   </div>
   <div class="container footer-bottom">

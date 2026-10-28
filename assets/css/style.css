@@ -116,10 +116,6 @@ h1, h2, h3, h4 {
 }
 
 .hero-grid {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 40px;
-  align-items: center;
   padding-top: 72px;
   padding-bottom: 72px;
 }
@@ -159,22 +155,12 @@ h1, h2, h3, h4 {
 
 .stat-source { margin: 14px 0 0; font-size: 0.78rem; color: #8db4ca; }
 
-.hero-photo { text-align: center; }
-
-.hero-photo img {
-  width: min(250px, 70vw);
-  margin: 0 auto;
-  border-radius: 20px;
-  border: 5px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
-}
-
 /* --------------------------------------------------------------------------
    Page hero (inner pages)
    -------------------------------------------------------------------------- */
 
 .page-hero {
-  background: linear-gradient(180deg, var(--ice) 0%, #fff 100%);
+  background: #fff;
   border-bottom: 1px solid var(--border);
   padding: 48px 0 28px;
 }

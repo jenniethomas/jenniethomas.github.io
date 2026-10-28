@@ -11,14 +11,12 @@ deploys automatically via GitHub Pages.
 ## Structure
 
 ```
-index.html           Home — hero, bio, research interests, featured pubs, short CV, news
+index.html           Home — hero, bio, research interests, featured pubs, short CV
 publications.html    Publications by year + preprints section (generated — see below)
-projects.html        CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects, models
-group.html           OPERA research group, supervision
-teaching.html        Teaching, supervision, outreach & policy
-news.html            News items
+models.html          WRF-Chem-Polar, microplastics-enabled GEOS-Chem, tools, past developments
+projects.html        CERTAINTY, CRiceS, Bubbleplast, ATMO-PLASTIC, past projects
 assets/css/          Stylesheet (no dependencies)
-assets/img/          Profile photo, banner photo, favicon
+assets/img/          Banner photo, favicon
 tools/build_pubs.py  Publication list generator
 HISTORY.md           Build log, content sources, decisions, TODOs
 .nojekyll            Tells GitHub Pages to serve files as-is
@@ -57,4 +55,3 @@ are fast), and rewrites `publications.html`.
 
 - Banner photo: [Pink floyd88 a](https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG),
   [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), via Wikimedia Commons.
-- Profile photo: from the [OPERA group](https://ige-opera.github.io/people/) website.

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Models | Jennie L. Thomas</title>
+<meta name="description" content="Models developed by Jennie L. Thomas and team: WRF-Chem-Polar, a regional chemistry-climate model for the polar regions, and a microplastics-enabled version of GEOS-Chem.">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand" href="index.html">Jennie L. Thomas<span>, PhD</span></a>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="publications.html">Publications</a>
+      <a class="active" href="models.html">Models</a>
+      <a href="projects.html">Projects</a>
+    </nav>
+  </div>
+</header>
+<main>
+<div class="page-hero">
+  <div class="container">
+    <h1>Models</h1>
+    <p class="page-lede">Numerical models I develop with my teams at IGE and LATMOS, released as open-source code, plus the tools I use and past developments.</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top: 36px;">
+
+  <article class="project-card">
+    <p style="margin: 0;"><span class="role-badge">Current development</span></p>
+    <h3><a href="https://wrf-chem-polar.eu">WRF-Chem-Polar</a></h3>
+    <p class="p-sub">A regional chemistry-climate model for the polar regions, based on WRF-Chem</p>
+    <p>WRF-Chem-Polar is a regional chemistry-climate model based on WRF-Chem, with enhancements for the polar regions. It builds on our implementation of surface and blowing-snow sources of Arctic bromine activation (<a href="https://doi.org/10.1029/2020ms002391">Marelle et al., 2021</a>) and is used to study aerosols, halogen and mercury chemistry, boundary-layer processes and clouds in the Arctic and Antarctic.</p>
+    <p style="font-size: 0.92rem; color: var(--muted);">Developed at IGE and LATMOS by Louis Marelle, Ruth Price, Rémy Lapere, Lucas Bastien, Lucas Giboni, Anderson Da Silva, Jean-Christophe Raut and Jennie Thomas.</p>
+    <div class="project-links">
+      <a class="pill-link" href="https://wrf-chem-polar.eu">Website &amp; documentation</a>
+      <a class="pill-link" href="https://github.com/WRF-Chem-Polar/WRF-Chem-Polar">Model code (GitHub)</a>
+      <a class="pill-link" href="https://github.com/WRF-Chem-Polar/wrfpp">wrfpp post-processing</a>
+      <a class="pill-link" href="https://github.com/WRF-Chem-Polar/WRF-infra">Infrastructure code</a>
+    </div>
+  </article>
+
+  <article class="project-card">
+    <p style="margin: 0;"><span class="role-badge">Current development</span></p>
+    <h3><a href="https://github.com/GEOS-Chem-IGE">Microplastics-enabled GEOS-Chem</a></h3>
+    <p class="p-sub">A version of the global GEOS-Chem chemical transport model that simulates atmospheric microplastics</p>
+    <p>Developed at IGE, this microplastics-enabled configuration of GEOS-Chem combines <a href="https://github.com/GEOS-Chem-IGE/GCClassic-MP">GCClassic-MP</a> (the &ldquo;Classic&rdquo; model configuration) with <a href="https://github.com/GEOS-Chem-IGE/HEMCO-MP">HEMCO-MP</a> (a microplastics-enabled emissions component), plus shared <a href="https://github.com/GEOS-Chem-IGE/GEOS-Chem-infra">infrastructure</a> for pre- and post-processing of microplastic and mercury simulations. It underpins our work on global atmospheric microplastic emissions and cycling, such as <a href="https://doi.org/10.21203/rs.3.rs-10231003/v1">Hough et al. (2026, preprint)</a>.</p>
+    <div class="project-links">
+      <a class="pill-link" href="https://github.com/GEOS-Chem-IGE">GitHub organization</a>
+      <a class="pill-link" href="https://github.com/GEOS-Chem-IGE/GCClassic-MP">GCClassic-MP</a>
+      <a class="pill-link" href="https://github.com/GEOS-Chem-IGE/HEMCO-MP">HEMCO-MP</a>
+      <a class="pill-link" href="https://github.com/GEOS-Chem-IGE/GEOS-Chem-infra">GEOS-Chem-infra</a>
+    </div>
+  </article>
+
+  <div class="section-head" style="margin-top: 40px;">
+    <h2>Tools I use</h2>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>FLEXPART</h3>
+      <p>The FLEXible PARTicle Lagrangian dispersion model, used to trace pollution transport to the Arctic (<a href="https://www.flexpart.eu/">flexpart.eu</a>).</p>
+    </div>
+    <div class="card">
+      <h3>FLEXPART-WRF</h3>
+      <p>FLEXPART driven by WRF meteorology for high-resolution transport studies (<a href="https://www.flexpart.eu/wiki/FpLimitedareaWrf">documentation</a>).</p>
+    </div>
+  </div>
+
+  <div class="section-head" style="margin-top: 40px;">
+    <h2>Past developments</h2>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>PACT-1D</h3>
+      <p>A 1D vertical-column chemistry-transport model for understanding boundary-layer processes, applied to HONO formation during the CalNex 2010 campaign (<a href="https://doi.org/10.1029/2021JD034689">Tuite et al., 2021</a>). <a href="https://github.com/PACT1D/PACT-1D-CALNEX/tree/v1.0">Code on GitHub</a>, archived on <a href="https://zenodo.org/record/4776419">Zenodo</a>.</p>
+    </div>
+  </div>
+
+</div>
+</main>
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <p class="footer-name">Jennie L. Thomas, PhD</p>
+      <p>CNRS Senior Researcher<br>
+      Institut des Géosciences de l'Environnement (IGE)<br>
+      Université Grenoble Alpes<br>
+      CS 40700, 38058 Grenoble Cedex 9, France</p>
+      <p class="email">Jennie.Thomas <span class="email-at">[at]</span> univ-grenoble-alpes.fr</p>
+    </div>
+    <div>
+      <p class="footer-heading">Links</p>
+      <ul class="footer-links">
+        <li><a href="https://scholar.google.com/citations?user=FMPvz8gAAAAJ&amp;hl=en">Google Scholar</a></li>
+        <li><a href="https://www.ige-grenoble.fr/">IGE</a></li>
+        <li><a href="https://ige-opera.github.io/">OPERA group</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-heading">Credits</p>
+      <p>Banner photo: <a href="https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG">Pink floyd88 a</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via Wikimedia Commons.</p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p>&copy; 2026 Jennie L. Thomas &middot; <a href="https://github.com/jenniethomas/jenniethomas.github.io">Site source on GitHub</a></p>
+  </div>
+</footer>
+</body>
+</html>

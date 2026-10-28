@@ -10,13 +10,10 @@ For repo structure and publication-list mechanics, see also `README.md`.
 | I want to add… | Do this |
 | --- | --- |
 | A new paper or preprint | Add a tuple to `PUBS` in `tools/build_pubs.py` (set flag `"preprint"` for unpublished work), run `python3 tools/build_pubs.py`, commit |
-| A news item | Add an `<article class="news-item">` block in `news.html` (and optionally the teaser section in `index.html`) |
 | A project | Add an `<article class="project-card">` in `projects.html` (ongoing projects), or a card in the "Past projects" grid |
-| A student / postdoc | `group.html` — the "Supervision" section |
-| A course | `teaching.html` — the "Teaching" section |
+| A model or tool | Add an `<article class="project-card">` (developed models) or a card in the grids of `models.html` |
 | A CV entry | `index.html` — the `<ol class="timeline">` block |
-| Update citation stats | `index.html` — the four `.stat` numbers in the hero, and the "as of" date |
-| A page-wide footer/header link | Every page duplicates the header nav and footer — edit all six `.html` files consistently |
+| A page-wide footer/header link | Every page duplicates the header nav and footer — edit all four `.html` files consistently (`tools/build_pubs.py` holds the template used to generate `publications.html`) |
 | An image | Put the file in `assets/img/`, check its licence, and credit it in the footer "Credits" column |
 
 ## Build log
@@ -61,6 +58,38 @@ For repo structure and publication-list mechanics, see also `README.md`.
   the [OSUG course page](https://www.osug.fr/en/missions/research/scientific-events/erca-european-research-course-on-atmospheres.html),
   and the [IGE announcement](https://www.ige-grenoble.fr/New-Direction-team-announced-for-the-European-Research-Course-on-Atmospheres).
 
+### 2026-10-28 — review round: site streamlined to four pages
+
+Applied Jennie's feedback series:
+
+- **Profile photo removed** from the home page (did not look right); the
+  `assets/img/profile.png` file and its footer credit were removed too.
+- **Citation metrics block removed** from the home page hero.
+- **1D modeling re-framed as past work** (home page hero + About + open-science
+  card reworded; PACT-1D moved to "Past developments" on the models page).
+- **New dedicated Models page** (`models.html`): current developments
+  **WRF-Chem-Polar** ([wrf-chem-polar.eu](https://wrf-chem-polar.eu)) and the
+  **microplastics-enabled GEOS-Chem**
+  ([GEOS-Chem-IGE](https://github.com/GEOS-Chem-IGE): GCClassic-MP, HEMCO-MP,
+  GEOS-Chem-infra); tools used (FLEXPART, FLEXPART-WRF); past developments
+  (PACT-1D). The old WRF-Chem card is superseded by the WRF-Chem-Polar entry.
+- **Group & supervision, Teaching (incl. ERCA) and News pages removed** on
+  request. Navigation is now Home · Publications · Models · Projects. ERCA
+  currently has no mention on the site — re-add on the home page or
+  publications page if desired.
+- **OPERA team link** added to the home page About text.
+- **Rejected preprint removed** (Cesler-Maloney et al., Fairbanks boundary
+  layers). 87 entries remain, 2 of them preprints (Hough et al., Price et al.).
+- **Style feedback**: research-interests subtitle line removed; page-hero
+  headings no longer sit on an ice-blue background (now white, avoiding
+  blue-on-blue); profile photo removed from the hero at Jennie's request.
+- **Em-dashes removed from all site copy** (they read as an AI-generation
+  tell). Page titles now use "|"; prose uses commas, colons and parentheses.
+  En-dashes in scientific compounds (e.g. "aerosol–cloud") are kept, as they
+  are standard in the field.
+- **ORCID and X/Twitter links removed** site-wide (footers, publications
+  lede, CV section). Footer links are now Google Scholar, IGE, OPERA group.
+
 ## Publication list: scope decisions
 
 - 88 curated entries: peer-reviewed articles, book chapters (*Sea Ice*,
@@ -81,14 +110,10 @@ For repo structure and publication-list mechanics, see also `README.md`.
 
 ## Known TODOs (need Jennie's input)
 
-- [ ] **Teaching page** — ERCA is listed (co-director since 2025); add further courses and lectures at Université Grenoble Alpes.
-- [ ] **Group page** — names of personally supervised students/postdocs (past and present).
-- [ ] **News items** — drafted from papers and project websites; please review, edit, reorder.
-- [ ] **Profile photo** — currently the one from the OPERA site; swap in a favourite if preferred.
+- [ ] **Profile photo** — none on the site since the review round; add a favourite to the home page hero when available (restore `.hero-photo` styles from git history if wanted).
 - [ ] **ORCID** — the record (0000-0003-2243-8137) contains an erroneous entry ("Cada-3 System Review", 2026) worth removing.
 - [ ] **Spot-check DOIs** — Crossref metadata is usually right but can carry
       typos (e.g. "BjØrn" for "Bjørn" in one Journal of Climate entry).
-- [ ] **Citation stats** — static text ("October 2026"); refresh occasionally.
 - [ ] **Old website** — jennielthomas.fr is retired/maintained separately by Jennie; consider adding a link there to this site.
 
 ## Image licences
@@ -96,7 +121,6 @@ For repo structure and publication-list mechanics, see also `README.md`.
 | Image | Source | Licence |
 | --- | --- | --- |
 | `arctic-hero.jpg` | [Arctic Ice 2.JPG](https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG) by Pink floyd88 a, via Wikimedia Commons | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) — credited in site footer |
-| `profile.png` | Jennie's own photo, via the [OPERA group site](https://ige-opera.github.io/people/) | Jennie's own |
 | `favicon.svg` | Created for this site | — |
 
 ## Deployment
