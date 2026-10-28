@@ -82,7 +82,9 @@ Applied Jennie's feedback series:
   layers). 87 entries remain, 2 of them preprints (Hough et al., Price et al.).
 - **Style feedback**: research-interests subtitle line removed; page-hero
   headings no longer sit on an ice-blue background (now white, avoiding
-  blue-on-blue); profile photo removed from the hero at Jennie's request.
+  blue-on-blue); profile photo removed from the hero at Jennie's request;
+  hero links recolored (light ice blue with underline) so they stay readable
+  over the banner image.
 - **Em-dashes removed from all site copy** (they read as an AI-generation
   tell). Page titles now use "|"; prose uses commas, colons and parentheses.
   En-dashes in scientific compounds (e.g. "aerosol–cloud") are kept, as they

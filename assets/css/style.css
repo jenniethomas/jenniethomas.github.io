@@ -135,6 +135,18 @@ h1, h2, h3, h4 {
   color: #fff;
 }
 
+.hero a {
+  color: #bfe2f5;
+  text-decoration: underline;
+  text-decoration-color: rgba(191, 226, 245, 0.45);
+  text-underline-offset: 3px;
+}
+
+.hero a:hover {
+  color: #fff;
+  text-decoration-color: #fff;
+}
+
 .hero-role { margin: 0 0 16px; color: #cfe3ef; font-size: 1.05rem; }
 
 .hero-blurb { margin: 0 0 26px; max-width: 56ch; color: #e8f1f8; }
