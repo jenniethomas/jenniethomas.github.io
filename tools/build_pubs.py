@@ -438,17 +438,16 @@ def build():
 
     sections = []
     if preprint_records:
-        n = len(preprint_records)
         sections.append(
             '<section class="pub-year" id="preprints">\n'
-            f'<h2>Preprints &amp; under review <span class="pub-count">{n} item{"s" if n != 1 else ""}</span></h2>\n'
+            '<h2>Preprints &amp; under review</h2>\n'
             '<ol class="pub-list">\n' + "\n".join(render_items(preprint_records)) + "\n</ol>\n</section>"
         )
     for y in years:
         pubs = [r for r in main_records if r["year"] == y]
         sections.append(
             f'<section class="pub-year" id="y{y}">\n'
-            f'<h2>{y} <span class="pub-count">{len(pubs)} publication{"s" if len(pubs) != 1 else ""}</span></h2>\n'
+            f'<h2>{y}</h2>\n'
             f'<ol class="pub-list">\n' + "\n".join(render_items(pubs)) + "\n</ol>\n</section>"
         )
 
@@ -521,7 +520,8 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
     </div>
     <div>
       <p class="footer-heading">Credits</p>
-      <p>Banner photo: <a href="https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG">Pink floyd88 a</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via Wikimedia Commons.</p>
+      <p>Banner photo: <a href="https://commons.wikimedia.org/wiki/File:Arctic_Ice_2.JPG">Pink floyd88 a</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via Wikimedia Commons.<br>
+      Project logos: <a href="https://certainty-aci.eu">CERTAINTY</a> and <a href="https://www.crices-h2020.eu">CRiceS</a>, from their project websites, used to identify the projects.</p>
     </div>
   </div>
   <div class="container footer-bottom">

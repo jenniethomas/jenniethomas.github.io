@@ -275,6 +275,14 @@ h1, h2, h3, h4 {
 
 .project-card .p-sub { margin: 0 0 10px; color: var(--muted); font-size: 0.95rem; }
 
+.project-logo {
+  float: right;
+  max-width: 250px;
+  width: 100%;
+  height: auto;
+  margin: 2px 0 10px 20px;
+}
+
 .role-badge {
   display: inline-block;
   background: var(--navy);
@@ -348,8 +356,6 @@ h1, h2, h3, h4 {
   border-bottom: 2px solid var(--ice-deep);
 }
 
-.pub-count { font-size: 0.85rem; color: var(--muted); font-weight: 500; margin-left: 6px; }
-
 .pub-list { list-style: none; margin: 0; padding: 0; counter-reset: none; }
 
 .pub { padding: 14px 0 12px; border-bottom: 1px dashed var(--border); }
@@ -417,6 +423,7 @@ h1, h2, h3, h4 {
   .hero-grid { grid-template-columns: 1fr; gap: 24px; padding-top: 48px; padding-bottom: 48px; }
   .footer-grid { grid-template-columns: 1fr; gap: 22px; }
   .nav { justify-content: center; }
+  .project-logo { float: none; max-width: 200px; margin: 10px 0 4px; }
 }
 
 /* --------------------------------------------------------------------------
