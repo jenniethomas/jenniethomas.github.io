@@ -52,6 +52,15 @@ For repo structure and publication-list mechanics, see also `README.md`.
   preprint to *Microplastics and Nanoplastics* 6, 45 (2026) this way.
 - Created this file.
 
+### 2026-10-28 — ERCA on the teaching page
+
+- Added **ERCA (European Research Course on the Atmosphere)** to the teaching
+  page: Jennie has co-directed the Grenoble school with Hélène Angot since
+  2025 (initial direction team with Emmanuel Cosme). Sources: the
+  [UGA ERCA 2026 page](https://faculte-sciences.univ-grenoble-alpes.fr/international/erca-2026/),
+  the [OSUG course page](https://www.osug.fr/en/missions/research/scientific-events/erca-european-research-course-on-atmospheres.html),
+  and the [IGE announcement](https://www.ige-grenoble.fr/New-Direction-team-announced-for-the-European-Research-Course-on-Atmospheres).
+
 ## Publication list: scope decisions
 
 - 88 curated entries: peer-reviewed articles, book chapters (*Sea Ice*,
@@ -72,7 +81,7 @@ For repo structure and publication-list mechanics, see also `README.md`.
 
 ## Known TODOs (need Jennie's input)
 
-- [ ] **Teaching page** — real course list at Université Grenoble Alpes (page currently has a placeholder line).
+- [ ] **Teaching page** — ERCA is listed (co-director since 2025); add further courses and lectures at Université Grenoble Alpes.
 - [ ] **Group page** — names of personally supervised students/postdocs (past and present).
 - [ ] **News items** — drafted from papers and project websites; please review, edit, reorder.
 - [ ] **Profile photo** — currently the one from the OPERA site; swap in a favourite if preferred.
