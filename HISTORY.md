@@ -221,6 +221,12 @@ was written between the rounds as the step-by-step guide for future updates:
       Journal of Climate 39) was corrected in the cached record on 2026-10-30;
       if that entry is ever re-fetched from Crossref the typo would return.
 - [ ] **Old website** — jennielthomas.fr is retired/maintained separately by Jennie; consider adding a link there to this site.
+- [ ] **Author-name confirmations** — see the "Open items" section of
+      `NAMES.md` (2026-10-30): full names for M. Piot, M. Rose and J. Kim
+      (ask the co-authors); confirm the OpenAlex-sourced expansions (Robert B.
+      Gerber, Narayana P. Anilkumar, Min H. Kuo, Ragnhild B. Skeie, the
+      Allens); settle Kathy vs Katharine S. Law (17 vs 3 papers); check
+      Gérard/Gerard Ancellet and Chris/Christopher Polashenski.
 
 ## Image licences
 

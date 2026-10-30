@@ -139,3 +139,61 @@ Crossref the typo will return** — re-fix `cr_authors` in
 4. Beware rule N8 when verifying: a plausible-looking first name must match
    the initials. Where memory and sources disagree, the checked source wins
    (that is how "Anke Roiger" and "Gabriele Pfister" were caught).
+
+## Open items (for the next session)
+
+Collected 2026-10-30, after the name expansion went live. Counts refer to the
+generated `publications.html` on that date.
+
+### 1. Full names still unknown — ask the co-authors directly
+
+Jennie knows all three; no public source carries a verifiable first name.
+
+| On the page | Person | Once known |
+| --- | --- | --- |
+| M. Piot (1 paper) | GSHOX campaign, LATMOS (Stutz et al. 2011) | delete the key from `INTENTIONALLY_ABBREVIATED`, add it to `MANUAL_NAME_FIXES`, update the tables above |
+| M. Rose (1 paper) | ACCESS campaign, DLR IPA (Roiger et al. 2015) | same |
+| J. Kim (1 paper) | ACCESS campaign, DLR IPA (Roiger et al. 2015) | same |
+
+### 2. OpenAlex-sourced expansions worth a confirmation
+
+These match the Crossref initials (rule N8) but were never confirmed with the
+person; a quick check at a conference or by email would settle them.
+
+- **Robert B. Gerber** (1 paper) — Crossref deposits "R. Benny"; OpenAlex
+  gives "Robert Benny Gerber". Confirm the R really is Robert.
+- **Narayana P. Anilkumar** (1 paper) — Crossref "N."; OpenAlex "Narayana
+  Pillai Anilkumar". Indian naming: confirm he is happy with "Narayana P.".
+- **Min H. Kuo** (1 paper) — Crossref "M. H."; OpenAlex "Min Hau Kuo". If he
+  writes his name hyphenated ("Min-Hau Kuo"), the display should follow
+  rule N2 instead.
+- **Ragnhild B. Skeie** (1 paper) — Crossref "R. B."; OpenAlex "Ragnhild
+  Bieltvedt Skeie". Norwegian convention: confirm "B." is her preferred form.
+- **Steve Allen** and **Deonie Allen** (1 paper each) — expanded via OpenAlex;
+  believed correct, never confirmed directly.
+
+### 3. Kathy or Katharine S. Law?
+
+The page currently shows **"Kathy S. Law" on 17 papers** and **"Katharine S.
+Law" on 3**, each as deposited by the publisher. Ask Kathy which form she
+prefers, then normalise the minority spelling with a `GIVEN_ALIASES` entry
+for the deposited form (safe here: she is the only Katharine/Kathy in the
+list).
+
+### 4. Accent and short-form checks
+
+- **Gerard M. Ancellet** (4 papers) — kept as deposited; if he uses "Gérard"
+  with the accent, add a `GIVEN_ALIASES` entry.
+- **Chris M. Polashenski** (2 papers) — OpenAlex says "Chris", other
+  databases "Christopher". Confirm which he uses.
+
+### 5. Maintenance recommendations
+
+- **Refresh the OpenAlex cache occasionally** (delete
+  `tools/openalex_cache.json`, e.g. once a year): profiles improve over time
+  and a refetch may resolve names that are stuck today without any table
+  change.
+- **After any cache rebuild**, re-check the Samset entry — Crossref still
+  carries the "BjØrn" typo (see the data-error note above).
+- Keep the build output's "still show only initials" list empty; when it is
+  not, work through the checklist above.
