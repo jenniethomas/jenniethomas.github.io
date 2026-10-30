@@ -117,6 +117,11 @@ as initials. If a full name becomes known, move the entry into
 | --- | --- | --- |
 | `gael` | Gaël | one Crossref record omits the accent of Gaël Le Roux (N5) |
 | `jean christophe` | Jean-Christophe | one Crossref record writes Jean-Christophe Raut unhyphenated (N2) |
+| `katharine s` | Kathy S. | Kathy S. Law: 3 papers deposit "Katharine S."; Jennie confirmed she publishes as Kathy (2026-10-30) |
+| `kathy` | Kathy S. | 2 papers deposit "Kathy" without her middle initial; OpenAlex confirms "Kathy S." — she is the only Kathy in the list |
+| `chris m` | Christopher M. | Christopher M. Polashenski: OpenAlex says "Chris"; his Dartmouth faculty page (https://engineering.dartmouth.edu/community/faculty/christopher-polashenski) and Jennie say Christopher |
+| `gerard m` | Gérard M. | Gérard Ancellet: OpenAlex says "Gerard"; his theses.fr person record (https://theses.fr/081917821) and Jennie confirm the accent |
+| `gerard` | Gérard | Ancellet deposits without the middle initial keep it that way |
 
 Known Crossref data error: the Linke et al. 2026 *Journal of Climate* record
 carries "BjØrn" (capital O-stroke) for Bjørn H. Samset. It is corrected in the
@@ -170,23 +175,19 @@ person; a quick check at a conference or by email would settle them.
   Bieltvedt Skeie". Norwegian convention: confirm "B." is her preferred form.
 - **Steve Allen** and **Deonie Allen** (1 paper each) — expanded via OpenAlex;
   believed correct, never confirmed directly.
+- **Chris D. Holmes** (1 paper) — deposited as "Chris D."; OpenAlex says
+  "Christopher D. Holmes". Left as deposited ("Chris"), which is believed to
+  be his published form; confirm if convenient.
 
-### 3. Kathy or Katharine S. Law?
+### 3. Gérard Ancellet: middle initial only on some papers
 
-The page currently shows **"Kathy S. Law" on 17 papers** and **"Katharine S.
-Law" on 3**, each as deposited by the publisher. Ask Kathy which form she
-prefers, then normalise the minority spelling with a `GIVEN_ALIASES` entry
-for the deposited form (safe here: she is the only Katharine/Kathy in the
-list).
+The accent is applied everywhere now, but deposits differ in the middle
+initial: the page shows "Gérard M. Ancellet" on 4 papers and "Gérard
+Ancellet" on 5. Ask him whether the M. belongs there, then unify with one
+alias: `gerard` -> "Gérard M." (add it everywhere) or `gerard m` -> "Gérard"
+(drop it everywhere).
 
-### 4. Accent and short-form checks
-
-- **Gerard M. Ancellet** (4 papers) — kept as deposited; if he uses "Gérard"
-  with the accent, add a `GIVEN_ALIASES` entry.
-- **Chris M. Polashenski** (2 papers) — OpenAlex says "Chris", other
-  databases "Christopher". Confirm which he uses.
-
-### 5. Maintenance recommendations
+### 4. Maintenance recommendations
 
 - **Refresh the OpenAlex cache occasionally** (delete
   `tools/openalex_cache.json`, e.g. once a year): profiles improve over time

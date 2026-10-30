@@ -230,6 +230,16 @@ INTENTIONALLY_ABBREVIATED = {
 GIVEN_ALIASES = {
     "gael": "Gaël",                       # Gaël Le Roux; one record omits the accent
     "jean christophe": "Jean-Christophe",   # unhyphenated Crossref variant
+    "katharine s": "Kathy S.",             # Kathy S. Law: 3 papers deposit "Katharine S.";
+                                          # Jennie confirmed she publishes as Kathy (2026-10-30)
+    "kathy": "Kathy S.",                   # Kathy S. Law without her middle initial on 2 papers;
+                                          # she is the only Kathy in the list
+    "chris m": "Christopher M.",           # Christopher M. Polashenski: OpenAlex profile says
+                                          # "Chris"; his Dartmouth faculty page
+                                          # (engineering.dartmouth.edu) and Jennie say Christopher
+    "gerard m": "Gérard M.",               # Gérard Ancellet: OpenAlex says "Gerard"; theses.fr
+                                          # person record and Jennie confirm the accent
+    "gerard": "Gérard",                    # deposits without the middle initial keep it that way
 }
 
 # Families whose multi-token given name must be kept in full: in Spanish
@@ -567,8 +577,8 @@ def fmt_authors(cr_authors, oa_pairs):
         family = clean_name(a.get("family") or "")
         given = clean_name(a.get("given") or "")
         if family:
-            given = GIVEN_ALIASES.get(norm_name(given), given)
             full_given = expand_given(i, given, family, oa_pairs)
+            full_given = GIVEN_ALIASES.get(norm_name(full_given), full_given)
             if norm_name(family) not in MIDDLE_KEEP_FAMILIES:
                 full_given = abbrev_middle(full_given)
             name = f"{full_given} {family}".strip()

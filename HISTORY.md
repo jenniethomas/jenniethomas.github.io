@@ -198,6 +198,16 @@ was written between the rounds as the step-by-step guide for future updates:
   (<https://robert-benny-gerber.huji.ac.il/>), which publishes him as
   "R. Benny Gerber". Added a `MANUAL_NAME_FIXES` entry to keep the leading
   initial (rule N4 in `NAMES.md`) and regenerated the page.
+- **Published name forms pinned** (Jennie-confirmed, same day):
+  "Kathy S. Law" everywhere — Crossref deposits "Katharine S." on 3 papers
+  and "Kathy" without the middle initial on 2, while OpenAlex consistently
+  says Kathy; "Christopher M. Polashenski" — his Dartmouth faculty page,
+  <https://engineering.dartmouth.edu/community/faculty/christopher-polashenski>;
+  "Gérard Ancellet" with the accent — his theses.fr person record,
+  <https://theses.fr/081917821>. All three are `GIVEN_ALIASES` entries, now
+  applied after expansion so they also catch OpenAlex-derived variants. The
+  Ancellet middle initial (present on 4 of his 9 slots) remains open in
+  `NAMES.md`.
 
 ## Publication list: scope decisions
 
@@ -230,9 +240,10 @@ was written between the rounds as the step-by-step guide for future updates:
 - [ ] **Author-name confirmations** — see the "Open items" section of
       `NAMES.md` (2026-10-30): full names for M. Piot, M. Rose and J. Kim
       (ask the co-authors); confirm the OpenAlex-sourced expansions (Narayana
-      P. Anilkumar, Min H. Kuo, Ragnhild B. Skeie, the Allens); settle Kathy
-      vs Katharine S. Law (17 vs 3 papers); check Gérard/Gerard Ancellet and
-      Chris/Christopher Polashenski.
+      P. Anilkumar, Min H. Kuo, Ragnhild B. Skeie, the Allens, Chris D.
+      Holmes); decide the Ancellet middle initial (M. on 4 papers, none on
+      the other 5). (Kathy S. Law, Christopher M. Polashenski, Gérard
+      Ancellet and R. Benny Gerber were settled on 2026-10-30.)
 
 ## Image licences
 
