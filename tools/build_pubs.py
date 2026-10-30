@@ -185,6 +185,7 @@ MANUAL_NAME_FIXES = {
     ("emmons", "l"): "Louisa",         # ORCID
     ("fast", "j"): "Jerome",          # ORCID
     ("flemming", "j"): "Johannes",     # OpenAlex profile, ECMWF
+    ("gerber", "r"): "R. Benny",       # his HUJI group page publishes "R. Benny Gerber" (rule N4)
     ("huey", "l"): "Lewis",            # ORCID ("L. Gregory Huey")
     ("kim", "s"): "Sang-Woo",          # ORCID
     ("klan", "p"): "Petr",             # confirmed by Jennie (Masaryk University)

@@ -192,6 +192,12 @@ was written between the rounds as the step-by-step guide for future updates:
   The conventions, the verified-name decision log (with ORCID sources) and
   the new-paper checklist are documented in **`NAMES.md`**, which mirrors the
   script's name data one-to-one.
+- **R. Benny Gerber corrected** (follow-up the same day): the OpenAlex
+  expansion had rendered him "Robert B. Gerber"; Jennie pointed to his
+  research-group page at the Hebrew University of Jerusalem
+  (<https://robert-benny-gerber.huji.ac.il/>), which publishes him as
+  "R. Benny Gerber". Added a `MANUAL_NAME_FIXES` entry to keep the leading
+  initial (rule N4 in `NAMES.md`) and regenerated the page.
 
 ## Publication list: scope decisions
 
@@ -223,10 +229,10 @@ was written between the rounds as the step-by-step guide for future updates:
 - [ ] **Old website** — jennielthomas.fr is retired/maintained separately by Jennie; consider adding a link there to this site.
 - [ ] **Author-name confirmations** — see the "Open items" section of
       `NAMES.md` (2026-10-30): full names for M. Piot, M. Rose and J. Kim
-      (ask the co-authors); confirm the OpenAlex-sourced expansions (Robert B.
-      Gerber, Narayana P. Anilkumar, Min H. Kuo, Ragnhild B. Skeie, the
-      Allens); settle Kathy vs Katharine S. Law (17 vs 3 papers); check
-      Gérard/Gerard Ancellet and Chris/Christopher Polashenski.
+      (ask the co-authors); confirm the OpenAlex-sourced expansions (Narayana
+      P. Anilkumar, Min H. Kuo, Ragnhild B. Skeie, the Allens); settle Kathy
+      vs Katharine S. Law (17 vs 3 papers); check Gérard/Gerard Ancellet and
+      Chris/Christopher Polashenski.
 
 ## Image licences
 

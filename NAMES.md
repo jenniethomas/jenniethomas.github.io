@@ -20,7 +20,7 @@ Every author renders as **first name in full, middle names as initials**
 | N1 | First names full, middle names reduced to initials | Marianne Tronstad Lund → "Marianne T. Lund" |
 | N2 | Hyphenated compound first names are one name; never abbreviated | "Jean-Christophe Raut", "Sang-Woo Kim" |
 | N3 | Compound surnames (Spanish/Portuguese order) keep the full given string — the second token is a surname, not a middle name | "Carlos Pérez García-Pando", "Beatriz Ferreira Araujo" |
-| N4 | Names published with a leading initial keep it when no verifiable fuller form exists | "V. Faye McNeill", "W. Richard Leaitch", "V. Holly L. Winton" |
+| N4 | Names whose published form carries a leading initial keep it; expand only when the person actually publishes a fuller form (their own website/publications page is authoritative) | "V. Faye McNeill", "W. Richard Leaitch", "V. Holly L. Winton", "R. Benny Gerber" |
 | N5 | Diacritics are preserved as the person uses them | "Gaël Le Roux", "Bjørn H. Samset", "Petr Klán" |
 | N6 | Typography is normalised: non-breaking hyphens (U+2010) become ASCII "-", non-breaking spaces become spaces | |
 | N7 | Jennie is bolded: any author with family "Thomas" and a given name starting with "J" (displayed as "Jennie L. Thomas") | |
@@ -42,7 +42,7 @@ Every author renders as **first name in full, middle names as initials**
 ## Verified full names (`MANUAL_NAME_FIXES`)
 
 These co-authors appear with initials in Crossref (and often OpenAlex), so
-their full first names are recorded by hand. Sources were checked on
+their published first-name form is recorded by hand. Sources were checked on
 2026-10-30; ORCID personal records are the most authoritative, so their IDs
 are kept here for re-verification. **Do not "correct" these from memory** —
 several look like obvious expansions but are not (see the Note column).
@@ -63,6 +63,7 @@ several look like obvious expansions but are not (see the Note column).
 | L. K. Emmons | Louisa K. Emmons | `("emmons", "l")` | ORCID 0000-0003-2325-6212 | |
 | J. D. Fast | Jerome D. Fast | `("fast", "j")` | ORCID 0000-0002-2006-5675 | |
 | J. Flemming | Johannes Flemming | `("flemming", "j")` | OpenAlex profile (ECMWF) | |
+| R. Benny | R. Benny Gerber | `("gerber", "r")` | confirmed by Jennie; his Hebrew University group page (https://robert-benny-gerber.huji.ac.il) | keeps its leading initial (N4); OpenAlex's "Robert" is not his published form |
 | L. G. Huey | Lewis G. Huey | `("huey", "l")` | ORCID 0000-0002-0518-7690 | published "L. Gregory Huey"; ORCID gives Lewis |
 | S.-W. Kim | Sang-Woo Kim | `("kim", "s")` | ORCID 0000-0003-1279-8331 | not Sang-Won |
 | P. Klán | Petr Klán | `("klan", "p")` | confirmed by Jennie (Masaryk University) | |
@@ -160,8 +161,6 @@ Jennie knows all three; no public source carries a verifiable first name.
 These match the Crossref initials (rule N8) but were never confirmed with the
 person; a quick check at a conference or by email would settle them.
 
-- **Robert B. Gerber** (1 paper) — Crossref deposits "R. Benny"; OpenAlex
-  gives "Robert Benny Gerber". Confirm the R really is Robert.
 - **Narayana P. Anilkumar** (1 paper) — Crossref "N."; OpenAlex "Narayana
   Pillai Anilkumar". Indian naming: confirm he is happy with "Narayana P.".
 - **Min H. Kuo** (1 paper) — Crossref "M. H."; OpenAlex "Min Hau Kuo". If he
