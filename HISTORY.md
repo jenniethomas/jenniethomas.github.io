@@ -129,14 +129,52 @@ was written between the rounds as the step-by-step guide for future updates:
   `.people-note` (old group page), `.hero-photo` and `.more-link`. The audit
   now comes back clean.
 
+### 2026-10-30 — publication cleanup, past-project links, ICE-ARC
+
+- **Removed two publications that are not Jennie's**: "Climate change in the
+  Arctic" (2014) and "Developing oil and gas resources in Arctic waters"
+  (2014), both curated as chapters of the EU report *Strategic Assessment of
+  Development of the Arctic*. Verified against the official PDF (University
+  of Lapland repository, 183 pp.): those chapters are by Mikko Strahlendorff
+  and Michał Łuszczuk, and "Thomas" appears nowhere in the report — the
+  entries look like a Google Scholar author merge. Because the titles are
+  generic, the Crossref matcher had also attached the wrong papers to them
+  on the live page (Bracegirdle & Stephenson, *Journal of Climate* 26,
+  669-678; Nair, *Journal of Unconventional Oil and Gas Resources* 6, 1-3).
+  Removed both tuples from `PUBS`, purged the wrong cache records, and
+  regenerated the page: 85 entries, all with Crossref DOIs.
+- **Verified** the similar-looking 2016 chapters in *The Changing Arctic and
+  the European Union* (Brill): publisher metadata lists Jennie Thomas as
+  co-author of both "Arctic offshore hydrocarbons and the European Union:
+  more constraints and less opportunities" and "Changes in Arctic maritime
+  transport", so they stay.
+- **iCUPE link fixed** on `projects.html`: now points to
+  <https://www.atm.helsinki.fi/icupe/> (the old deep link returns 404).
+- **NETCARE link fixed**: now points to the project's ACP special issue,
+  <https://acp.copernicus.org/articles/special_issue835.html>
+  (netcare-project.ca is a parked domain for sale).
+- **ICE-ARC added** to "Past projects" (EU FP7, 2014-2017, quantifying the
+  global economic and societal costs of Arctic change), linked to its CORDIS
+  results article *The high cost of Arctic change* — the project website is
+  dead, so the CORDIS article is the most stable reference.
+- **ACCESS link fixed**: now points to its CORDIS project reporting page,
+  <https://cordis.europa.eu/project/id/265863/reporting> (access-eu.org
+  serves unrelated spam content). With this, all "Past projects" links are
+  verified working; the PARCS and CATCH sites are still alive.
+- **Author-name typo fixed**: Crossref metadata for the Linke et al. 2026
+  *Journal of Climate* paper rendered "BjØrn H. Samset"; corrected to
+  "Bjørn H. Samset" in the cached record and the page regenerated. If the
+  entry is ever re-fetched from Crossref, the typo will come back.
+
 ## Publication list: scope decisions
 
-- 88 curated entries: peer-reviewed articles, book chapters (*Sea Ice*,
-  *The Changing Arctic and the European Union*, *Strategic Assessment of
-  Development of the Arctic*), and preprints.
+- 85 curated entries: peer-reviewed articles, book chapters (*Sea Ice*,
+  *The Changing Arctic and the European Union*), and preprints.
 - Excluded from the Google Scholar record: an ACPD discussion-paper duplicate,
   a BAMS supplement duplicate, a 2022 ACS correction notice, the POLAR 2018
-  conference abstract, and the 2007 PhD thesis.
+  conference abstract, the 2007 PhD thesis, and the two *Strategic Assessment
+  of Development of the Arctic* chapters (removed 2026-10-30, see build log:
+  authored by Strahlendorff and Łuszczuk, not by Jennie).
 - Name bolding is automatic: any author with family name "Thomas" and a given
   name starting with "J" is bolded.
 - The Crossref matcher rejects preprint/discussion versions of papers that
@@ -150,13 +188,11 @@ was written between the rounds as the step-by-step guide for future updates:
 ## Known TODOs (need Jennie's input)
 
 - [ ] **Profile photo** — none on the site since the review round; add a favourite to the home page hero when available (the `.hero-photo` rules were removed in the 2026-10-28 dead-CSS pass; restore them from git history if wanted).
-- [ ] **Past-project links going stale** — on `projects.html`: the iCUPE link
-      returns 404, netcare-project.ca is a parked domain for sale, and
-      access-eu.org now serves unrelated spam content. Consider updating or
-      removing those three links. (PARCS and CATCH sites are still alive.)
 - [ ] **ORCID** — the record (0000-0003-2243-8137) contains an erroneous entry ("Cada-3 System Review", 2026) worth removing.
 - [ ] **Spot-check DOIs** — Crossref metadata is usually right but can carry
-      typos (e.g. "BjØrn" for "Bjørn" in one Journal of Climate entry).
+      typos. The one known instance ("BjØrn" for "Bjørn", Linke et al.,
+      Journal of Climate 39) was corrected in the cached record on 2026-10-30;
+      if that entry is ever re-fetched from Crossref the typo would return.
 - [ ] **Old website** — jennielthomas.fr is retired/maintained separately by Jennie; consider adding a link there to this site.
 
 ## Image licences
