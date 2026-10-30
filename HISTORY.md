@@ -165,6 +165,33 @@ was written between the rounds as the step-by-step guide for future updates:
   *Journal of Climate* paper rendered "BjØrn H. Samset"; corrected to
   "Bjørn H. Samset" in the cached record and the page regenerated. If the
   entry is ever re-fetched from Crossref, the typo will come back.
+- **Full author names on the publications page**: first names expanded,
+  middle names kept as initials ("William R. Simpson"), Jennie shown as
+  "Jennie L. Thomas" throughout. New pipeline in `tools/build_pubs.py`:
+  Crossref records now store raw author data (`cr_authors`) in
+  `tools/crossref_cache.json`; the display list is rebuilt on every run.
+  Abbreviated first names are expanded from `MANUAL_NAME_FIXES` (hand-verified
+  names: 25 from ORCID records, 8 from OpenAlex author profiles checked
+  against their institutions — Schlager, Dibb, Flemming, Scheibe, Boxe,
+  Stock, Baumann, Roiger, Dahlkötter, Platt — and 5 confirmed by Jennie:
+  von Glasow, von Salzen, Klán, Le Roux, Denier van der Gon) and from
+  OpenAlex author profiles (cached in `tools/openalex_cache.json`). The
+  careful checks corrected several near-miss guesses: A. Roiger is **Anke**
+  (not Andreas), G. Pfister is **Gabriele** (not Guido), D. W. Toohey is
+  **Darin** (not David), S. Starkweather is **Sandra** (not Sarah),
+  S.-W. Kim is **Sang-Woo** (not Sang-Won), and A. Reiter is **Annika**.
+  An expansion only applies when the candidate first name matches the
+  Crossref initials. Three co-authors stay as initials on purpose (unknown
+  full names, Jennie's decision): M. Piot (GSHOX, LATMOS), M. Rose and
+  J. Kim (ACCESS campaign, DLR IPA) — listed in `INTENTIONALLY_ABBREVIATED`.
+  Compound surnames are protected from middle-initial abbreviation
+  (Carlos Pérez García-Pando, Beatriz Ferreira Araujo), and names published
+  with a leading initial keep it when no fuller form is verifiable
+  (V. Faye McNeill, V. Holly L. Winton, W. Richard Leaitch). The build now
+  prints any author it could not expand, so this cannot silently regress.
+  The conventions, the verified-name decision log (with ORCID sources) and
+  the new-paper checklist are documented in **`NAMES.md`**, which mirrors the
+  script's name data one-to-one.
 
 ## Publication list: scope decisions
 

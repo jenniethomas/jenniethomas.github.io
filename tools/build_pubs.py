@@ -6,13 +6,24 @@ The curated list of publications lives in PUBS below. For each entry the
 script queries the Crossref API to fetch the DOI, full author list, journal,
 volume and pages, then renders publications.html.
 
+Author names: many Crossref records carry only initials ("J. Stutz"). The
+script expands them to full first names where possible, using
+  1. MANUAL_NAME_FIXES below (hand-verified full names), then
+  2. OpenAlex author profiles (https://openalex.org), fetched per DOI and
+     cached in tools/openalex_cache.json.
+An expansion is only applied when the candidate's first name is consistent
+with the Crossref initials, so other people's names are never substituted.
+Any author that still has an abbreviated first name after this is listed at
+the end of the build output; verify the full name and add it to
+MANUAL_NAME_FIXES.
+
 Usage:
     python3 tools/build_pubs.py
 
 To add a new publication: append a tuple to PUBS and re-run the script.
-Crossref responses are cached in tools/crossref_cache.json so re-runs are fast.
-Entries that do not match anything on Crossref fall back to the curated
-venue/author strings.
+Crossref responses are cached in tools/crossref_cache.json, OpenAlex author
+data in tools/openalex_cache.json, so re-runs are fast. Entries that do not
+match anything on Crossref fall back to the curated venue/author strings.
 
 NOTE: name your own name bolding is automatic - any author with family name
 "Thomas" and a given name starting with "J" (or no given name) is bolded.
@@ -24,6 +35,7 @@ import os
 import random
 import re
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -33,7 +45,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "publications.html")
 CACHE = os.path.join(HERE, "crossref_cache.json")
+OA_CACHE = os.path.join(HERE, "openalex_cache.json")
 CONTACT = "https://github.com/jenniethomas/jenniethomas.github.io"
+MAILTO = "Jennie.Thomas@univ-grenoble-alpes.fr"
 
 # (year, title, fallback venue, fallback authors, flag)
 # flag: "preprint" marks preprint / under-review items. These are listed in a
@@ -150,6 +164,80 @@ DOI_OVERRIDES = {
 }
 
 
+# Full first names for co-authors whose Crossref AND OpenAlex records only
+# carry initials. Keys are (normalised family name, first initial); a fix only
+# applies when the Crossref initials are consistent with it. Sources (verified
+# 2026-10-30; see HISTORY.md): ORCID personal records, OpenAlex author profiles
+# and publisher/university pages. When the build output lists a still-abbreviated
+# author, verify their full name and add it here.
+MANUAL_NAME_FIXES = {
+    ("arnold", "s"): "Steve",          # ORCID
+    ("baumann", "r"): "Robert",        # OpenAlex profile, DLR
+    ("boxe", "c"): "Christopher S.",   # OpenAlex profile, Howard University
+    ("brock", "c"): "Charles",         # ORCID
+    ("brough", "n"): "Neil",           # ORCID
+    ("browse", "j"): "Jo",             # ORCID (Crossref already full on one paper)
+    ("burkhart", "j"): "John",         # ORCID
+    ("denier van der gon", "h"): "Hugo",   # confirmed by Jennie (TNO, Utrecht)
+    ("dahlkotter", "f"): "Florian",    # DLR publications
+    ("dibb", "j"): "Jack E.",          # OpenAlex profile, University of New Hampshire
+    ("duncan", "b"): "Bryan",          # ORCID
+    ("emmons", "l"): "Louisa",         # ORCID
+    ("fast", "j"): "Jerome",          # ORCID
+    ("flemming", "j"): "Johannes",     # OpenAlex profile, ECMWF
+    ("huey", "l"): "Lewis",            # ORCID ("L. Gregory Huey")
+    ("kim", "s"): "Sang-Woo",          # ORCID
+    ("klan", "p"): "Petr",             # confirmed by Jennie (Masaryk University)
+    ("kuhs", "w"): "Werner",           # ORCID
+    ("le roux", "g"): "Gaël",          # confirmed by Jennie (Toulouse)
+    ("long", "y"): "Yiwen",            # ORCID
+    ("minikin", "a"): "Andreas",       # ORCID
+    ("nowak", "j"): "John",            # ORCID
+    ("pfister", "g"): "Gabriele",      # ORCID
+    ("platt", "u"): "Ulrich",          # Semantic Scholar record, Heidelberg
+    ("raut", "j"): "Jean-Christophe",  # ORCID (OpenAlex full on recent papers)
+    ("reiter", "a"): "Annika",         # ORCID
+    ("ridley", "d"): "David A.",       # Google Scholar profile, formerly Leeds
+    ("roiger", "a"): "Anke",           # DLR Institute of Atmospheric Physics
+    ("scheibe", "m"): "Monika",        # OpenAlex profile, DLR
+    ("schlager", "h"): "Hans",         # OpenAlex profile, DLR
+    ("soja", "a"): "Amber",            # ORCID
+    ("starkweather", "s"): "Sandra",   # ORCID
+    ("stock", "p"): "Paul",            # OpenAlex profile, DLR
+    ("stutz", "j"): "Jochen",          # ORCID
+    ("toohey", "d"): "Darin",          # ORCID
+    ("von glasow", "r"): "Roland",     # confirmed by Jennie (UEE at the time)
+    ("von salzen", "k"): "Knut",       # confirmed by Jennie (ECCC, Canada)
+    ("warneke", "c"): "Carsten",       # ORCID
+    ("weinheimer", "a"): "Andrew",     # ORCID
+    ("yoshida", "y"): "Yasuko",        # ORCID
+}
+
+
+# Co-authors whose full first name could not be verified in any source and
+# which therefore stay abbreviated on the page on purpose (Jennie's decision,
+# 2026-10-30). If a full name becomes known, remove the entry from here and
+# add it to MANUAL_NAME_FIXES.
+INTENTIONALLY_ABBREVIATED = {
+    ("kim", "j"),      # ACCESS campaign, DLR Institute of Atmospheric Physics
+    ("piot", "m"),     # GSHOX campaigns, LATMOS
+    ("rose", "m"),     # ACCESS campaign, DLR Institute of Atmospheric Physics
+}
+
+# Given-name spelling variants to normalise before anything else (keyed by the
+# normalised given name).
+GIVEN_ALIASES = {
+    "gael": "Gaël",                       # Gaël Le Roux; one record omits the accent
+    "jean christophe": "Jean-Christophe",   # unhyphenated Crossref variant
+}
+
+# Families whose multi-token given name must be kept in full: in Spanish
+# naming the second given-name slot is the first surname, not a middle name
+# ("Carlos Pérez García-Pando"), and the same applies to the Portuguese
+# form "Beatriz Ferreira Araujo".
+MIDDLE_KEEP_FAMILIES = {"garcia pando", "araujo"}
+
+
 PREPRINT_DOI_PREFIXES = (
     "10.31223/",  # EarthArXiv
     "10.22541/",  # ESSOAar
@@ -181,16 +269,50 @@ def norm_title(s):
     return set(s.split())
 
 
-def load_cache():
-    if os.path.exists(CACHE):
-        with open(CACHE, encoding="utf-8") as f:
+def load_json(path):
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     return {}
 
 
-def save_cache(cache):
-    with open(CACHE, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False, indent=1, sort_keys=True)
+def save_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=1, sort_keys=True)
+
+
+def openalex_authorships(doi, retries=3):
+    """Fetch [(raw_name, display_name), ...] for a DOI from OpenAlex, or None."""
+    url = ("https://api.openalex.org/works/doi:"
+           + urllib.parse.quote(doi, safe="")
+           + "?select=authorships&mailto=" + urllib.parse.quote(MAILTO))
+    for attempt in range(retries):
+        time.sleep(random.uniform(0.1, 0.3))
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": f"jenniethomas-site-builder/1.0 ({CONTACT})"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                ships = json.load(r).get("authorships", [])
+                return [
+                    (sh.get("raw_author_name") or "",
+                     (sh.get("author") or {}).get("display_name") or "")
+                    for sh in ships
+                ]
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            if e.code in (429, 500, 502, 503) and attempt < retries - 1:
+                time.sleep(2 * (attempt + 1))
+                continue
+            return None
+        except Exception:
+            if attempt < retries - 1:
+                time.sleep(1 + attempt)
+                continue
+            return None
+    return None
 
 
 def crossref_query(title, with_author=True, rows=8, retries=3):
@@ -264,17 +386,195 @@ def best_match(items, tokens, year=None):
     return scored[0][4]
 
 
-def fmt_authors(authors):
-    """Format a Crossref author list, bolding Jennie L. Thomas."""
-    parts = []
-    for a in authors or []:
-        family = a.get("family")
-        given = (a.get("given") or "").strip()
-        if family:
-            name = f"{given} {family}".strip()
-            is_jt = family.lower() == "thomas" and (not given or given.lower().startswith("j"))
+# --- Author-name expansion -------------------------------------------------
+#
+# Many Crossref records carry initials only ("J. Stutz", "H.-W. Jacobi").
+# The functions below expand such first names using OpenAlex author profiles
+# and MANUAL_NAME_FIXES, guarding against wrong-person substitutions by
+# requiring the candidate first name to match the Crossref initials. Crossref
+# names that are already full are always kept as-is.
+
+UNRESOLVED_AUTHORS = set()  # names still abbreviated after expansion (reported)
+
+
+def clean_name(s):
+    """Normalise the typography of names from external sources."""
+    return ((s or "").replace("\u2010", "-").replace("\u2011", "-")
+            .replace("\u202f", " ").replace("\xa0", " ").strip())
+
+
+def norm_name(s):
+    """Lowercase, accent-free, punctuation-free form used for matching."""
+    s = unicodedata.normalize("NFKD", s or "")
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
+
+
+def _token_is_initial(tok):
+    """True for initial tokens like 'J.', 'J', 'Th.', 'S.R.', 'J.-C.'."""
+    parts = tok.split("-")
+    if len(parts) > 1:
+        return all(p and _token_is_initial(p) for p in parts)
+    if re.fullmatch(r"[^\W\d_]\.?", tok):            # "J", "J."
+        return True
+    if re.fullmatch(r"[^\W\d_]{2}\.", tok):          # "Th."
+        return True
+    if re.fullmatch(r"(?:[^\W\d_]\.)+", tok):        # "S.R.", "J.L."
+        return True
+    return False
+
+
+def given_is_abbreviated(given):
+    """True if a given-name string carries only initials ('J. L.', 'H.-W.')."""
+    tokens = [t for t in re.split(r"\s+", given or "") if t]
+    return bool(tokens) and all(_token_is_initial(t) for t in tokens)
+
+
+def initial_seq(given):
+    """Initial letters implied by an abbreviated given name.
+
+    "J. L." -> ["j", "l"]; "H.-W." -> ["h", "w"]; "Th." -> ["th"].
+    """
+    seq = []
+    for tok in re.split(r"\s+", given or ""):
+        if not _token_is_initial(tok):
+            continue
+        for part in tok.split("-"):
+            letters = re.findall(r"[^\W\d_]", part)
+            if len(letters) <= 2 and not re.fullmatch(r"(?:[^\W\d_]\.){2,}", part):
+                seq.append("".join(letters).lower())      # "Th." -> "th"
+            else:
+                seq.extend(l.lower() for l in letters)    # "S.R." -> "s", "r"
+    return seq
+
+
+def merge_given(abbrev_given, candidate):
+    """Combine abbreviated Crossref initials with a fuller candidate first name.
+
+    The candidate must cover the first Crossref initial, which guards against
+    a wrong-person match; Crossref initials missing from the candidate are
+    appended ("M. G." + "Mark" -> "Mark G.").
+    """
+    initials = _merge_initials(abbrev_given)
+    if not initials:
+        return None
+    cand_toks = [norm_name(t) for t in re.split(r"[\s-]+", candidate) if t]
+    idx = 0
+    for tok in cand_toks:
+        if idx < len(initials) and tok.startswith(initials[idx]):
+            idx += 1
+    if idx == 0:
+        return None
+    out = clean_name(candidate)
+    extra = initials[idx:]
+    if extra:
+        out += " " + " ".join(e.upper() + "." for e in extra)
+    return out
+
+
+def _merge_initials(given):
+    """Initials to preserve when merging: those from initial tokens plus the
+    first letter of each full token ("L. Gregory" -> ["l", "g"])."""
+    seq = []
+    for tok in re.split(r"\s+", given or ""):
+        if not tok:
+            continue
+        if _token_is_initial(tok):
+            seq.extend(initial_seq(tok))
         else:
-            name = (a.get("name") or "").strip()
+            seq.append(tok[0].lower())
+    return seq
+
+
+def abbrev_middle(given):
+    """Abbreviate middle names to initials, keeping first names full.
+
+    "William Robert" -> "William R."; tokens that are already initials are
+    kept, and leading initials before the first name stay untouched
+    ("R. Benny" stays "R. Benny").
+    """
+    tokens = [t for t in re.split(r"\s+", given or "") if t]
+    if len(tokens) < 2:
+        return given
+    first_full = None
+    for i, t in enumerate(tokens):
+        if not _token_is_initial(t):
+            first_full = i
+            break
+    if first_full is None:
+        return given                      # only initials, nothing to do
+    out = tokens[:first_full + 1]
+    for t in tokens[first_full + 1:]:
+        out.append(t if _token_is_initial(t) else t[0].upper() + ".")
+    return " ".join(out)
+
+
+def _oa_family(disp):
+    toks = norm_name(disp).split()
+    return toks[-1] if toks else ""
+
+
+def _oa_display_for(index, given, family, oa_pairs):
+    """Find the OpenAlex display name that corresponds to a Crossref author."""
+    if not oa_pairs:
+        return None
+    exact = norm_name(f"{given} {family}")
+    for raw, disp in oa_pairs:
+        if norm_name(raw) == exact:
+            return disp
+    if index < len(oa_pairs) and _oa_family(oa_pairs[index][1]) == norm_name(family):
+        return oa_pairs[index][1]
+    matches = [d for _, d in oa_pairs if _oa_family(d) == norm_name(family)]
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def expand_given(index, given, family, oa_pairs):
+    """Expand an abbreviated first name via MANUAL_NAME_FIXES or OpenAlex."""
+    tokens = [t for t in re.split(r"\s+", given or "") if t]
+    if not tokens or not _token_is_initial(tokens[0]):
+        return given                      # first token is a full name already
+    initials = _merge_initials(given)
+    candidates = []
+    manual = MANUAL_NAME_FIXES.get((norm_name(family), initials[0] if initials else ""))
+    if manual:
+        candidates.append(manual)
+    disp = _oa_display_for(index, given, family, oa_pairs)
+    if disp:
+        disp = clean_name(disp)
+        toks = disp.split()
+        if len(toks) > 1 and norm_name(toks[-1]) == norm_name(family):
+            disp_given = " ".join(toks[:-1])
+            if disp_given and not given_is_abbreviated(disp_given):
+                candidates.append(disp_given)
+    for cand in candidates:
+        merged = merge_given(given, cand)
+        if merged:
+            return merged
+    if (given_is_abbreviated(given)
+            and (norm_name(family), initials[0] if initials else "")
+            not in INTENTIONALLY_ABBREVIATED):
+        UNRESOLVED_AUTHORS.add(f"{given} {family}")
+    return given
+
+
+def fmt_authors(cr_authors, oa_pairs):
+    """Format the author list, expanding abbreviated first names (see above)."""
+    parts = []
+    for i, a in enumerate(cr_authors or []):
+        family = clean_name(a.get("family") or "")
+        given = clean_name(a.get("given") or "")
+        if family:
+            given = GIVEN_ALIASES.get(norm_name(given), given)
+            full_given = expand_given(i, given, family, oa_pairs)
+            if norm_name(family) not in MIDDLE_KEEP_FAMILIES:
+                full_given = abbrev_middle(full_given)
+            name = f"{full_given} {family}".strip()
+            is_jt = family.lower() == "thomas" and (
+                not full_given or full_given.lower().startswith("j"))
+        else:
+            name = clean_name(a.get("name") or "")
             is_jt = False
         if not name:
             continue
@@ -297,7 +597,14 @@ def record_from_item(item):
         "container": container,
         "volume": item.get("volume", ""),
         "page": item.get("page") or item.get("article-number", ""),
-        "authors": fmt_authors(item.get("author")),
+        "cr_authors": [
+            {
+                "given": a.get("given") or "",
+                "family": a.get("family") or "",
+                "name": a.get("name") or "",
+            }
+            for a in item.get("author") or []
+        ],
     }
 
 
@@ -316,10 +623,37 @@ def fetch_by_doi(doi):
 
 
 def build():
+    UNRESOLVED_AUTHORS.clear()
     doi_overrides = {
         " ".join(sorted(norm_title(t))): d for t, d in DOI_OVERRIDES.items()
     }
-    cache = load_cache()
+    cache = load_json(CACHE)
+    oa_cache = load_json(OA_CACHE)
+
+    def oa_for(doi):
+        """OpenAlex author list for a DOI (fetched once, then cached)."""
+        if not doi:
+            return None
+        if doi not in oa_cache:
+            oa_cache[doi] = openalex_authorships(doi)
+        return oa_cache[doi]
+
+    # One-time migration: cached records that predate the raw-author
+    # ("cr_authors") cache format are re-fetched through their known DOI
+    # (no re-search), so they keep the same DOI but now carry the raw author
+    # list plus the OpenAlex names.
+    for pub in PUBS:
+        key = " ".join(sorted(norm_title(pub[1])))
+        cached = cache.get(key)
+        if not cached or not cached.get("doi") or "cr_authors" in cached:
+            continue
+        rec = fetch_by_doi(cached["doi"])
+        if rec:
+            rec["oa"] = oa_for(cached["doi"])
+            cache[key] = rec
+        else:
+            cache.pop(key, None)
+
     # Decide which cached entries need to be looked up again:
     #  - misses (None) and manual overrides: always
     #  - conference-abstract matches: always
@@ -348,6 +682,11 @@ def build():
         else:
             todo.append((i, key, pub[1], pub[0], pub[4]))
 
+    def attach_oa(rec):
+        if rec:
+            rec["oa"] = oa_for(rec.get("doi"))
+        return rec
+
     def work(job):
         i, key, title, year, flag = job
         # Search Crossref for the best record. A published (non-preprint)
@@ -361,20 +700,21 @@ def build():
         if item is not None:
             container = (item.get("container-title") or [""])[0]
             if not record_is_preprint(item.get("DOI"), container):
-                return i, key, record_from_item(item)
+                return i, key, attach_oa(record_from_item(item))
         # Only a preprint (or nothing) was found: use the manual DOI if one
         # is recorded, otherwise the preprint match itself.
         manual_doi = doi_overrides.get(key)
         if manual_doi:
-            return i, key, fetch_by_doi(manual_doi)
-        return i, key, record_from_item(item) if item else None
+            return i, key, attach_oa(fetch_by_doi(manual_doi))
+        return i, key, attach_oa(record_from_item(item)) if item else None
 
     if todo:
         with ThreadPoolExecutor(max_workers=1) as ex:
             for i, key, rec in ex.map(work, todo):
                 results[i] = rec
                 cache[key] = rec
-        save_cache(cache)
+    save_json(CACHE, cache)
+    save_json(OA_CACHE, oa_cache)
 
     # Assemble records
     records = []
@@ -398,7 +738,8 @@ def build():
             venue_html = ", ".join(html.escape(p) for p in venue_parts if p)
             if not venue_html:
                 venue_html = html.escape(venue)
-            authors_html = rec["authors"] or fmt_fallback_authors(authors)
+            authors_html = (fmt_authors(rec.get("cr_authors"), rec.get("oa"))
+                            or fmt_fallback_authors(authors))
         else:
             title_html = html.escape(title)
             venue_html = html.escape(venue)
@@ -460,6 +801,11 @@ def build():
         print("  No DOI found for:")
         for t in unmatched:
             print(f"    - {t}")
+    if UNRESOLVED_AUTHORS:
+        print(f"  {len(UNRESOLVED_AUTHORS)} author name(s) still show only initials"
+              " (verify the full name and add it to MANUAL_NAME_FIXES):")
+        for n in sorted(UNRESOLVED_AUTHORS):
+            print(f"    - {n}")
 
 
 PAGE_TEMPLATE = """<!DOCTYPE html>

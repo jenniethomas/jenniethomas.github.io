@@ -79,6 +79,28 @@ into *Microplastics and Nanoplastics* 6, 45 (2026) this way.)
 Delete its tuple from `PUBS` and re-run the script. Crossref responses are
 cached in `tools/crossref_cache.json`; stale cache entries are harmless.
 
+### Author names
+
+The conventions, the verified-name decision log and the update checklist all
+live in **`NAMES.md`** — read it before touching name data. In short: first
+names are shown in full, middle names as initials ("William R. Simpson").
+Crossref records often carry initials only, so the script expands them, in
+this order:
+
+1. `MANUAL_NAME_FIXES` in `tools/build_pubs.py`: hand-verified full names,
+   keyed by (family name, first initial). Sources so far: ORCID records,
+   OpenAlex author profiles and publisher pages, plus five names Jennie
+   confirmed directly.
+2. OpenAlex author profiles, fetched by DOI and cached in
+   `tools/openalex_cache.json` (delete that file to refetch).
+
+An expansion is only applied when the candidate's first name matches the
+Crossref initials, so other people's names are never substituted. If the
+build output lists a still-abbreviated author, verify their full name (an
+ORCID record is the best source) and add it to `MANUAL_NAME_FIXES`. The few
+co-authors deliberately left as initials (unknown full names) are listed in
+`INTENTIONALLY_ABBREVIATED` in the script.
+
 ## Edit page content
 
 | Task | Place |
